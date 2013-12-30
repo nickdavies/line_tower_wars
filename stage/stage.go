@@ -4,8 +4,8 @@ const PlayerStageWidth = 30
 const PlayerStageHeight = 30
 
 type Stage struct {
-    rows int
-    cols int
+    Rows int
+    Cols int
 
     NumPlayers int
     players []*PlayerStage
@@ -35,8 +35,8 @@ func NewStage(num_players int) *Stage {
     }
 
     return &Stage{
-        rows: rows,
-        cols: cols,
+        Rows: rows,
+        Cols: cols,
 
         NumPlayers: num_players,
         players: players,
