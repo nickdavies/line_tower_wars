@@ -1,11 +1,26 @@
 package stage
 
 type PlayerStage struct {
-    Player int
+    PlayerNum int
     Tiles [][]Terrain
 }
 
-func (ps *PlayerStage) InitMap() {
+func NewPlayerStage(player_num int, tiles [][]Terrain) *PlayerStage {
+
+    start := player_num * PlayerStageWidth
+    end := start + PlayerStageWidth
+
+    player := &PlayerStage{
+        PlayerNum: player_num,
+        Tiles: tiles[start:end],
+    }
+
+    player.initMap()
+
+    return player
+}
+
+func (ps *PlayerStage) initMap() {
 
     for col := 0; col < PlayerStageWidth; col++ {
         // Setup the top and bottom walls

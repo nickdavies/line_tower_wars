@@ -7,14 +7,16 @@ type Stage struct {
     rows int
     cols int
 
-    Players int
+    NumPlayers int
+    players []*PlayerStage
+
     Tiles [][]Terrain
 }
 
-func NewStage(players int) *Stage {
+func NewStage(num_players int) *Stage {
 
     // Workout field dimentions
-    cols := players * PlayerStageWidth
+    cols := num_players * PlayerStageWidth
     rows := PlayerStageHeight
 
     // make all the columns
@@ -25,40 +27,30 @@ func NewStage(players int) *Stage {
         tiles[i] = make([]Terrain, rows)
     }
 
-    s := &Stage{
+
+    // Build Players
+    players := make([]*PlayerStage, num_players)
+    for i := 0; i < num_players; i++ {
+        players[i] = NewPlayerStage(i, tiles)
+    }
+
+    return &Stage{
         rows: rows,
         cols: cols,
 
-        Players: players,
+        NumPlayers: num_players,
+        players: players,
+
         Tiles: tiles,
     }
-
-    s.InitMap()
-
-    return s
-}
-
-func (s *Stage) InitMap() {
-
-    for i := 0; i < s.Players; i++ {
-        p := s.GetPlayer(i)
-        p.InitMap()
-    }
-
 }
 
 func (s *Stage) GetPlayer(player int) *PlayerStage {
 
-    if player < 0 || player >= s.Players {
+    if player < 0 || player >= s.NumPlayers {
         panic("Player out of bounds")
     }
 
-    start := player * PlayerStageWidth
-    end := start + PlayerStageWidth
-
-    return &PlayerStage{
-        Player: player,
-        Tiles: s.Tiles[start:end],
-    }
+    return s.players[player]
 }
 
