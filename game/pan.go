@@ -52,6 +52,10 @@ func NewPanGame(pan_region_x, pan_region_y, starting_x, starting_y, pan_speed ui
         view_y: starting_y,
     }
 
+    pg.voidRun = voidRun{&pg.gameBase}
+    pg.voidEvents = voidEvents{&pg.gameBase}
+    pg.bubbleEnd = bubbleEnd{&pg.gameBase}
+
     child.setParent(pg)
 
     return pg

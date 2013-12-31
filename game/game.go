@@ -33,7 +33,7 @@ func (g *gameBase) setParent(parent Game) {
 
 // Struct for games with no setup/cleanup
 type voidSetup struct {
-    gameBase
+    *gameBase
 }
 
 func (g *voidSetup) Setup() error {
@@ -52,7 +52,7 @@ func (g *voidSetup) Cleanup() {
 
 // Struct for doing nothing on run
 type voidRun struct {
-    gameBase
+    *gameBase
 }
 
 func (g *voidRun) Run() error {
@@ -61,7 +61,7 @@ func (g *voidRun) Run() error {
 
 // Struct for passing events though
 type voidEvents struct {
-    gameBase
+    *gameBase
 }
 
 func (g *voidEvents) HandleEvent(event sdl.Event) {
@@ -72,7 +72,7 @@ func (g *voidEvents) HandleEvent(event sdl.Event) {
 
 // Struct for simply passing end command up
 type bubbleEnd struct {
-    gameBase
+    *gameBase
 }
 
 func (g *bubbleEnd) End() {

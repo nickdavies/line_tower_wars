@@ -50,6 +50,12 @@ func NewStageGame(players int, square_size int, child Game) Game {
             stage.T_Goal: 0xff0000,
         },
     }
+
+    sg.voidRun = voidRun{&sg.gameBase}
+    sg.voidEvents = voidEvents{&sg.gameBase}
+    sg.voidSetup = voidSetup{&sg.gameBase}
+    sg.bubbleEnd = bubbleEnd{&sg.gameBase}
+
     if child != nil {
         child.setParent(sg)
     }
