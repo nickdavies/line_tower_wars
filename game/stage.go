@@ -37,8 +37,7 @@ type stageGame struct {
     surface *sdl.Surface
 }
 
-func NewStageGame(players int, square_size int, child Game) Game {
-    s := stage.NewStage(players)
+func NewStageGame(s *stage.Stage, square_size int, child Game) Game {
 
     sg := &stageGame{
         gameBase: gameBase{child: child},
@@ -100,7 +99,9 @@ func (g *stageGame) Setup() error {
 
 func (g *stageGame) Cleanup() {
     g.surface.Free()
-    g.child.Cleanup()
+    if g.child != nil {
+        g.child.Cleanup()
+    }
 }
 
 
