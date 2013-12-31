@@ -112,10 +112,7 @@ func (g *panGame) Update(deltaTime int64) {
     var mouse_x int
     var mouse_y int
 
-    errno := sdl.GetMouseState(&mouse_x, &mouse_y)
-    if errno != 0 {
-        panic(fmt.Errorf("Error getting mouse position: %s", sdl.GetError()))
-    }
+    sdl.GetMouseState(&mouse_x, &mouse_y)
 
     parent_x, parent_y := g.parent.GetSize()
 
