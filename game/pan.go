@@ -78,6 +78,34 @@ func (g *panGame) Cleanup() {
     g.child.Cleanup()
 }
 
+func (g *panGame) calculatePan(mouse, pan_region_size, current_pan, pannable_size, window_size uint16, deltaTime int64) int16 {
+    max_pan := float32((int64(g.pan_speed) * deltaTime) / int64(time.Second))
+
+    if mouse < pan_region_size {
+        pan_size := uint16(max_pan * float32(pan_region_size - mouse) / float32(pan_region_size))
+
+        if current_pan < pan_size {
+            return -1 * int16(current_pan)
+        } else {
+            return -1 * int16(pan_size)
+        }
+    }
+
+    if mouse > (window_size - pan_region_size) {
+        pan_size := uint16(max_pan * float32(pan_region_size - (window_size - mouse)) / float32(pan_region_size))
+
+        fmt.Println("pan_size", pan_size)
+
+        if current_pan + window_size + pan_size > pannable_size {
+            return int16(pannable_size - current_pan - window_size)
+        } else {
+            return int16(pan_size)
+        }
+    }
+
+    return 0
+}
+
 func (g *panGame) Update(deltaTime int64) {
     var mouse_x int
     var mouse_y int
@@ -89,41 +117,8 @@ func (g *panGame) Update(deltaTime int64) {
 
     parent_x, parent_y := g.parent.GetSize()
 
-    pan_amount := uint16((int64(g.pan_speed) * deltaTime) / int64(time.Second))
-
-    if uint16(mouse_x) < g.pan_region_x {
-        if g.view_x < pan_amount {
-            g.view_x = 0
-        } else {
-            g.view_x -= pan_amount
-        }
-    }
-
-    if uint16(mouse_x) > (parent_x - g.pan_region_x) {
-        max_pan := g.child_x - parent_x
-        if g.view_x + pan_amount > max_pan {
-            g.view_x = max_pan
-        } else {
-            g.view_x += pan_amount
-        }
-    }
-
-    if uint16(mouse_y) < g.pan_region_y {
-        if g.view_y < pan_amount {
-            g.view_y = 0
-        } else {
-            g.view_y -= pan_amount
-        }
-    }
-
-    if uint16(mouse_y) > (parent_y - g.pan_region_y) {
-        max_pan := g.child_y - parent_y
-        if g.view_y + pan_amount > max_pan {
-            g.view_y = max_pan
-        } else {
-            g.view_y += pan_amount
-        }
-    }
+    g.view_x = uint16(int16(g.view_x) + g.calculatePan(uint16(mouse_x), g.pan_region_x, g.view_x, g.child_x, parent_x, deltaTime))
+    g.view_y = uint16(int16(g.view_y) + g.calculatePan(uint16(mouse_y), g.pan_region_y, g.view_y, g.child_y, parent_y, deltaTime))
 }
 
 func (g *panGame) Render(target *sdl.Surface) {
