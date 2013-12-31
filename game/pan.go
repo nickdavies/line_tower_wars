@@ -94,8 +94,6 @@ func (g *panGame) calculatePan(mouse, pan_region_size, current_pan, pannable_siz
     if mouse > (window_size - pan_region_size) {
         pan_size := uint16(max_pan * float32(pan_region_size - (window_size - mouse)) / float32(pan_region_size))
 
-        fmt.Println("pan_size", pan_size)
-
         if current_pan + window_size + pan_size > pannable_size {
             return int16(pannable_size - current_pan - window_size)
         } else {
