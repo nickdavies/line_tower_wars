@@ -1,7 +1,7 @@
 package stage
 
-const PlayerStageWidth = 30
-const PlayerStageHeight = 30
+const PlayerStageWidth = 25
+const PlayerStageHeight = 60
 
 type Stage struct {
     Rows int
