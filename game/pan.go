@@ -64,7 +64,7 @@ func NewPanGame(pan_region_x, pan_region_y, starting_x, starting_y, pan_speed ui
 func (g *panGame) Setup() error {
     g.child_x, g.child_y = g.child.GetSize()
 
-    g.surface = sdl.CreateRGBSurface(sdl.SWSURFACE, int(g.child_x), int(g.child_y), 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000)
+    g.surface = sdl.CreateRGBSurface(sdl.HWSURFACE, int(g.child_x), int(g.child_y), 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000)
     if g.surface == nil {
         return fmt.Errorf("No surface created: %s", sdl.GetError())
     }

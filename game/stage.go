@@ -1,6 +1,10 @@
 package game
 
 import (
+    "fmt"
+)
+
+import (
     "github.com/banthar/Go-SDL/sdl"
 )
 
@@ -17,9 +21,6 @@ type stageGame struct {
     // proxy events
     voidEvents
 
-    // proxy setup/cleanup
-    voidSetup
-
     // no offsets
     voidOffsets
 
@@ -32,6 +33,8 @@ type stageGame struct {
     s *stage.Stage
     square_size int
     terrain_colours map[stage.Terrain]uint32
+
+    surface *sdl.Surface
 }
 
 func NewStageGame(players int, square_size int, child Game) Game {
@@ -56,7 +59,6 @@ func NewStageGame(players int, square_size int, child Game) Game {
 
     sg.voidRun = voidRun{&sg.gameBase}
     sg.voidEvents = voidEvents{&sg.gameBase}
-    sg.voidSetup = voidSetup{&sg.gameBase}
     sg.voidOffsets = voidOffsets{&sg.gameBase}
     sg.bubbleEnd = bubbleEnd{&sg.gameBase}
 
@@ -65,6 +67,40 @@ func NewStageGame(players int, square_size int, child Game) Game {
     }
 
     return sg
+}
+
+func (g *stageGame) Setup() error {
+    g.surface = sdl.CreateRGBSurface(sdl.HWSURFACE, int(g.size_x), int(g.size_y), 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000)
+    if g.surface == nil {
+        return fmt.Errorf("No surface created: %s", sdl.GetError())
+    }
+
+    g.surface = sdl.DisplayFormat(g.surface)
+    if g.surface == nil {
+        return fmt.Errorf("No surface created: %s", sdl.GetError())
+    }
+
+    for row := 0; row < len(g.s.Tiles[0]); row++ {
+        for col := 0; col < len(g.s.Tiles); col++ {
+            g.surface.FillRect(&sdl.Rect{
+                X: int16(col * g.square_size),
+                Y: int16(row * g.square_size),
+                W: uint16(g.square_size),
+                H: uint16(g.square_size),
+            }, g.terrain_colours[g.s.Tiles[col][row]])
+        }
+    }
+
+    if g.child != nil {
+        return g.child.Setup()
+    }
+
+    return nil
+}
+
+func (g *stageGame) Cleanup() {
+    g.surface.Free()
+    g.child.Cleanup()
 }
 
 
@@ -76,16 +112,16 @@ func (g *stageGame) Update(deltaTime int64) {
 
 func (g *stageGame) Render(target *sdl.Surface) {
 
-    for row := 0; row < len(g.s.Tiles[0]); row++ {
-        for col := 0; col < len(g.s.Tiles); col++ {
-            target.FillRect(&sdl.Rect{
-                X: int16(col * g.square_size),
-                Y: int16(row * g.square_size),
-                W: uint16(g.square_size),
-                H: uint16(g.square_size),
-            }, g.terrain_colours[g.s.Tiles[col][row]])
-        }
-    }
+    target.Blit(
+        &sdl.Rect{
+            X: 0,
+            Y: 0,
+            W: uint16(g.size_x),
+            H: uint16(g.size_y),
+        },
+        g.surface,
+        nil,
+    )
 
     if g.child != nil {
         g.child.Render(target)
