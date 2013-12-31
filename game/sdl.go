@@ -94,6 +94,10 @@ func (g *sdlGame) Render(target *sdl.Surface) {
     g.display.Flip()
 }
 
+func (g *sdlGame) GetSize() (uint16, uint16) {
+    return g.x, g.y
+}
+
 func (g *sdlGame) Run() error {
     var err error
 

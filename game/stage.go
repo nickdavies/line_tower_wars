@@ -23,6 +23,9 @@ type stageGame struct {
     // proxy ends
     bubbleEnd
 
+    size_x uint16
+    size_y uint16
+
     s *stage.Stage
     square_size int
     terrain_colours map[stage.Terrain]uint32
@@ -33,6 +36,9 @@ func NewStageGame(players int, square_size int, child Game) Game {
 
     sg := &stageGame{
         gameBase: gameBase{child: child},
+
+        size_x: uint16(square_size * len(s.Tiles)),
+        size_y: uint16(square_size * len(s.Tiles[0])),
 
         s: s,
         square_size: square_size,
@@ -76,3 +82,8 @@ func (g *stageGame) Render(target *sdl.Surface) {
     }
 
 }
+
+func (g *stageGame) GetSize() (uint16, uint16) {
+    return g.size_x, g.size_y
+}
+

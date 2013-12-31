@@ -14,6 +14,8 @@ type Game interface {
     Update(deltaTime int64)
     Render(target *sdl.Surface)
 
+    GetSize() (x uint16, y uint16)
+
     setParent(parent Game)
 
     Run() error
