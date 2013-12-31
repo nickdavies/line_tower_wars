@@ -1,5 +1,7 @@
 package game
 
+import "fmt"
+
 import (
     "github.com/banthar/Go-SDL/sdl"
 )
@@ -13,9 +15,6 @@ type entityGame struct {
 
     // no run loop
     voidRun
-
-    // proxy events
-    voidEvents
 
     // no offsets
     voidOffsets
@@ -45,7 +44,6 @@ func NewEntityGame(s *stage.Stage, square_size int, child Game) Game {
     }
 
     eg.voidRun = voidRun{&eg.gameBase}
-    eg.voidEvents = voidEvents{&eg.gameBase}
     eg.voidOffsets = voidOffsets{&eg.gameBase}
     eg.voidSetup = voidSetup{&eg.gameBase}
     eg.bubbleEnd = bubbleEnd{&eg.gameBase}
@@ -55,6 +53,21 @@ func NewEntityGame(s *stage.Stage, square_size int, child Game) Game {
     }
 
     return eg
+}
+
+func (g *entityGame) HandleEvent(event sdl.Event) {
+    switch event.(type) {
+    case *sdl.MouseButtonEvent:
+        e := event.(*sdl.MouseButtonEvent)
+        if e.Type == sdl.MOUSEBUTTONDOWN {
+            fmt.Println("click", e.X, e.Y)
+        }
+    default:
+    }
+
+    if g.child != nil {
+        g.child.HandleEvent(event)
+    }
 }
 
 func (g *entityGame) Update(deltaTime int64) {
