@@ -20,6 +20,9 @@ type stageGame struct {
     // proxy setup/cleanup
     voidSetup
 
+    // no offsets
+    voidOffsets
+
     // proxy ends
     bubbleEnd
 
@@ -54,6 +57,7 @@ func NewStageGame(players int, square_size int, child Game) Game {
     sg.voidRun = voidRun{&sg.gameBase}
     sg.voidEvents = voidEvents{&sg.gameBase}
     sg.voidSetup = voidSetup{&sg.gameBase}
+    sg.voidOffsets = voidOffsets{&sg.gameBase}
     sg.bubbleEnd = bubbleEnd{&sg.gameBase}
 
     if child != nil {

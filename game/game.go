@@ -15,6 +15,7 @@ type Game interface {
     Render(target *sdl.Surface)
 
     GetSize() (x uint16, y uint16)
+    GetXYOffsets() (x uint16, y uint16)
 
     setParent(parent Game)
 
@@ -81,4 +82,11 @@ func (g *bubbleEnd) End() {
     }
 }
 
+type voidOffsets struct {
+    *gameBase
+}
+
+func (g *voidOffsets) GetXYOffsets() (uint16, uint16) {
+    return g.parent.GetXYOffsets()
+}
 

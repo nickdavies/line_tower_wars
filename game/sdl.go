@@ -9,24 +9,12 @@ import (
     "github.com/banthar/Go-SDL/sdl"
 )
 
-func NewSdlGame(x, y uint16, child Game) Game {
-    g := &sdlGame{
-        gameBase: gameBase{child: child},
-
-        x: x,
-        y: y,
-    }
-
-    if child != nil {
-        child.setParent(g)
-    }
-
-    return g
-}
-
 type sdlGame struct {
     // Get parent/child fields
     gameBase
+
+    // no offsets
+    voidOffsets
 
     running bool
 
@@ -36,6 +24,24 @@ type sdlGame struct {
 
     // main display
     display *sdl.Surface
+}
+
+
+func NewSdlGame(x, y uint16, child Game) Game {
+    g := &sdlGame{
+        gameBase: gameBase{child: child},
+
+        x: x,
+        y: y,
+    }
+
+    g.voidOffsets = voidOffsets{&g.gameBase}
+
+    if child != nil {
+        child.setParent(g)
+    }
+
+    return g
 }
 
 func (g *sdlGame) Setup() error {

@@ -150,3 +150,7 @@ func (g *panGame) GetSize() (uint16, uint16) {
     return g.child.GetSize()
 }
 
+func (g *panGame) GetXYOffsets() (uint16, uint16) {
+    return g.view_x, g.view_y
+}
+
