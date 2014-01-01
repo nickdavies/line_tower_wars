@@ -1,4 +1,4 @@
-package game
+package layer
 
 import (
     "time"
@@ -9,9 +9,9 @@ import (
     "github.com/banthar/Go-SDL/sdl"
 )
 
-type sdlGame struct {
+type sdlLayer struct {
     // Get parent/child fields
-    gameBase
+    layerBase
 
     // no offsets
     voidOffsets
@@ -27,15 +27,15 @@ type sdlGame struct {
 }
 
 
-func NewSdlGame(x, y uint16, child Game) Game {
-    g := &sdlGame{
-        gameBase: gameBase{child: child},
+func NewSdlLayer(x, y uint16, child Layer) Layer {
+    g := &sdlLayer{
+        layerBase: layerBase{child: child},
 
         x: x,
         y: y,
     }
 
-    g.voidOffsets = voidOffsets{&g.gameBase}
+    g.voidOffsets = voidOffsets{&g.layerBase}
 
     if child != nil {
         child.setParent(g)
@@ -44,7 +44,7 @@ func NewSdlGame(x, y uint16, child Game) Game {
     return g
 }
 
-func (g *sdlGame) Setup() error {
+func (g *sdlLayer) Setup() error {
     var errno = sdl.Init(sdl.INIT_EVERYTHING)
     if errno != 0 {
         return fmt.Errorf("Init failed: %s", sdl.GetError())
@@ -62,14 +62,14 @@ func (g *sdlGame) Setup() error {
     return nil
 }
 
-func (g *sdlGame) Cleanup() {
+func (g *sdlLayer) Cleanup() {
     if g.child != nil {
         g.child.Cleanup()
     }
     sdl.Quit()
 }
 
-func (g *sdlGame) HandleEvent(event sdl.Event) {
+func (g *sdlLayer) HandleEvent(event sdl.Event) {
     switch event.(type) {
     case *sdl.QuitEvent:
         g.End()
@@ -86,13 +86,13 @@ func (g *sdlGame) HandleEvent(event sdl.Event) {
     }
 }
 
-func (g *sdlGame) Update(deltaTime int64) {
+func (g *sdlLayer) Update(deltaTime int64) {
     if g.child != nil {
         g.child.Update(deltaTime)
     }
 }
 
-func (g *sdlGame) Render(target *sdl.Surface) {
+func (g *sdlLayer) Render(target *sdl.Surface) {
     if g.child != nil {
         g.child.Render(g.display)
     }
@@ -100,11 +100,11 @@ func (g *sdlGame) Render(target *sdl.Surface) {
     g.display.Flip()
 }
 
-func (g *sdlGame) GetSize() (uint16, uint16) {
+func (g *sdlLayer) GetSize() (uint16, uint16) {
     return g.x, g.y
 }
 
-func (g *sdlGame) Run() error {
+func (g *sdlLayer) Run() error {
     var err error
 
     err = g.Setup()
@@ -137,7 +137,7 @@ func (g *sdlGame) Run() error {
     return nil
 }
 
-func (g *sdlGame) End() {
+func (g *sdlLayer) End() {
     g.running = false
 }
 

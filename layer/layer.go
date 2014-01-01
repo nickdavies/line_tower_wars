@@ -1,10 +1,10 @@
-package game
+package layer
 
 import (
     "github.com/banthar/Go-SDL/sdl"
 )
 
-type Game interface {
+type Layer interface {
 
     Setup() error
     Cleanup()
@@ -17,24 +17,24 @@ type Game interface {
     GetSize() (x uint16, y uint16)
     GetXYOffsets() (x uint16, y uint16)
 
-    setParent(parent Game)
+    setParent(parent Layer)
 
     Run() error
     End()
 }
 
-type gameBase struct {
-    child Game
-    parent Game
+type layerBase struct {
+    child Layer
+    parent Layer
 }
 
-func (g *gameBase) setParent(parent Game) {
+func (g *layerBase) setParent(parent Layer) {
     g.parent = parent
 }
 
-// Struct for games with no setup/cleanup
+// Struct for Layers with no setup/cleanup
 type voidSetup struct {
-    *gameBase
+    *layerBase
 }
 
 func (g *voidSetup) Setup() error {
@@ -53,7 +53,7 @@ func (g *voidSetup) Cleanup() {
 
 // Struct for doing nothing on run
 type voidRun struct {
-    *gameBase
+    *layerBase
 }
 
 func (g *voidRun) Run() error {
@@ -62,7 +62,7 @@ func (g *voidRun) Run() error {
 
 // Struct for passing events though
 type voidEvents struct {
-    *gameBase
+    *layerBase
 }
 
 func (g *voidEvents) HandleEvent(event sdl.Event) {
@@ -73,7 +73,7 @@ func (g *voidEvents) HandleEvent(event sdl.Event) {
 
 // Struct for simply passing end command up
 type bubbleEnd struct {
-    *gameBase
+    *layerBase
 }
 
 func (g *bubbleEnd) End() {
@@ -83,7 +83,7 @@ func (g *bubbleEnd) End() {
 }
 
 type voidOffsets struct {
-    *gameBase
+    *layerBase
 }
 
 func (g *voidOffsets) GetXYOffsets() (uint16, uint16) {

@@ -1,4 +1,4 @@
-package game
+package layer
 
 import (
     "fmt"
@@ -12,8 +12,8 @@ import (
     "../stage"
 )
 
-type stageGame struct {
-    gameBase
+type stageLayer struct {
+    layerBase
 
     // no run loop
     voidRun
@@ -37,10 +37,10 @@ type stageGame struct {
     surface *sdl.Surface
 }
 
-func NewStageGame(s *stage.Stage, square_size int, child Game) Game {
+func NewStageLayer(s *stage.Stage, square_size int, child Layer) Layer {
 
-    sg := &stageGame{
-        gameBase: gameBase{child: child},
+    sg := &stageLayer{
+        layerBase: layerBase{child: child},
 
         size_x: uint16(square_size * len(s.Tiles)),
         size_y: uint16(square_size * len(s.Tiles[0])),
@@ -56,10 +56,10 @@ func NewStageGame(s *stage.Stage, square_size int, child Game) Game {
         },
     }
 
-    sg.voidRun = voidRun{&sg.gameBase}
-    sg.voidEvents = voidEvents{&sg.gameBase}
-    sg.voidOffsets = voidOffsets{&sg.gameBase}
-    sg.bubbleEnd = bubbleEnd{&sg.gameBase}
+    sg.voidRun = voidRun{&sg.layerBase}
+    sg.voidEvents = voidEvents{&sg.layerBase}
+    sg.voidOffsets = voidOffsets{&sg.layerBase}
+    sg.bubbleEnd = bubbleEnd{&sg.layerBase}
 
     if child != nil {
         child.setParent(sg)
@@ -68,7 +68,7 @@ func NewStageGame(s *stage.Stage, square_size int, child Game) Game {
     return sg
 }
 
-func (g *stageGame) Setup() error {
+func (g *stageLayer) Setup() error {
     g.surface = sdl.CreateRGBSurface(sdl.HWSURFACE, int(g.size_x), int(g.size_y), 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000)
     if g.surface == nil {
         return fmt.Errorf("No surface created: %s", sdl.GetError())
@@ -97,7 +97,7 @@ func (g *stageGame) Setup() error {
     return nil
 }
 
-func (g *stageGame) Cleanup() {
+func (g *stageLayer) Cleanup() {
     g.surface.Free()
     if g.child != nil {
         g.child.Cleanup()
@@ -105,13 +105,13 @@ func (g *stageGame) Cleanup() {
 }
 
 
-func (g *stageGame) Update(deltaTime int64) {
+func (g *stageLayer) Update(deltaTime int64) {
     if g.child != nil {
         g.child.Update(deltaTime)
     }
 }
 
-func (g *stageGame) Render(target *sdl.Surface) {
+func (g *stageLayer) Render(target *sdl.Surface) {
 
     target.Blit(
         &sdl.Rect{
@@ -130,7 +130,7 @@ func (g *stageGame) Render(target *sdl.Surface) {
 
 }
 
-func (g *stageGame) GetSize() (uint16, uint16) {
+func (g *stageLayer) GetSize() (uint16, uint16) {
     return g.size_x, g.size_y
 }
 

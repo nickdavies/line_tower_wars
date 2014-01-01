@@ -1,4 +1,4 @@
-package game
+package layer
 
 import "fmt"
 
@@ -10,8 +10,8 @@ import (
     "../stage"
 )
 
-type entityGame struct {
-    gameBase
+type entityLayer struct {
+    layerBase
 
     // no run loop
     voidRun
@@ -32,9 +32,9 @@ type entityGame struct {
     square_size int
 }
 
-func NewEntityGame(s *stage.Stage, square_size int, child Game) Game {
-    eg := &entityGame{
-        gameBase: gameBase{child: child},
+func NewEntityLayer(s *stage.Stage, square_size int, child Layer) Layer {
+    eg := &entityLayer{
+        layerBase: layerBase{child: child},
 
         size_x: uint16(square_size * len(s.Tiles)),
         size_y: uint16(square_size * len(s.Tiles[0])),
@@ -43,10 +43,10 @@ func NewEntityGame(s *stage.Stage, square_size int, child Game) Game {
         square_size: square_size,
     }
 
-    eg.voidRun = voidRun{&eg.gameBase}
-    eg.voidOffsets = voidOffsets{&eg.gameBase}
-    eg.voidSetup = voidSetup{&eg.gameBase}
-    eg.bubbleEnd = bubbleEnd{&eg.gameBase}
+    eg.voidRun = voidRun{&eg.layerBase}
+    eg.voidOffsets = voidOffsets{&eg.layerBase}
+    eg.voidSetup = voidSetup{&eg.layerBase}
+    eg.bubbleEnd = bubbleEnd{&eg.layerBase}
 
     if child != nil {
         child.setParent(eg)
@@ -55,7 +55,7 @@ func NewEntityGame(s *stage.Stage, square_size int, child Game) Game {
     return eg
 }
 
-func (g *entityGame) HandleEvent(event sdl.Event) {
+func (g *entityLayer) HandleEvent(event sdl.Event) {
     switch event.(type) {
     case *sdl.MouseButtonEvent:
         e := event.(*sdl.MouseButtonEvent)
@@ -70,13 +70,13 @@ func (g *entityGame) HandleEvent(event sdl.Event) {
     }
 }
 
-func (g *entityGame) Update(deltaTime int64) {
+func (g *entityLayer) Update(deltaTime int64) {
     if g.child != nil {
         g.child.Update(deltaTime)
     }
 }
 
-func (g *entityGame) Render(target *sdl.Surface) {
+func (g *entityLayer) Render(target *sdl.Surface) {
 
     var mouse_x int
     var mouse_y int
@@ -107,7 +107,7 @@ func (g *entityGame) Render(target *sdl.Surface) {
 
 }
 
-func (g *entityGame) GetSize() (uint16, uint16) {
+func (g *entityLayer) GetSize() (uint16, uint16) {
     return g.size_x, g.size_y
 }
 

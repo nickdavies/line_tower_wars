@@ -1,4 +1,4 @@
-package game
+package layer
 
 import (
     "fmt"
@@ -9,8 +9,8 @@ import (
     "github.com/banthar/Go-SDL/sdl"
 )
 
-type panGame struct {
-    gameBase
+type panLayer struct {
+    layerBase
 
     // no run loop
     voidRun
@@ -34,14 +34,14 @@ type panGame struct {
     surface *sdl.Surface
 }
 
-func NewPanGame(pan_region_x, pan_region_y, starting_x, starting_y, pan_speed uint16, child Game) Game {
+func NewPanLayer(pan_region_x, pan_region_y, starting_x, starting_y, pan_speed uint16, child Layer) Layer {
 
     if child == nil {
-        panic(fmt.Errorf("You must give a child to pan game"))
+        panic(fmt.Errorf("You must give a child to pan Layer"))
     }
 
-    pg := &panGame{
-        gameBase: gameBase{child: child},
+    pg := &panLayer{
+        layerBase: layerBase{child: child},
 
         pan_region_x: pan_region_x,
         pan_region_y: pan_region_y,
@@ -52,16 +52,16 @@ func NewPanGame(pan_region_x, pan_region_y, starting_x, starting_y, pan_speed ui
         view_y: starting_y,
     }
 
-    pg.voidRun = voidRun{&pg.gameBase}
-    pg.voidEvents = voidEvents{&pg.gameBase}
-    pg.bubbleEnd = bubbleEnd{&pg.gameBase}
+    pg.voidRun = voidRun{&pg.layerBase}
+    pg.voidEvents = voidEvents{&pg.layerBase}
+    pg.bubbleEnd = bubbleEnd{&pg.layerBase}
 
     child.setParent(pg)
 
     return pg
 }
 
-func (g *panGame) Setup() error {
+func (g *panLayer) Setup() error {
     g.child_x, g.child_y = g.child.GetSize()
 
     g.surface = sdl.CreateRGBSurface(sdl.HWSURFACE, int(g.child_x), int(g.child_y), 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000)
@@ -77,12 +77,12 @@ func (g *panGame) Setup() error {
     return g.child.Setup()
 }
 
-func (g *panGame) Cleanup() {
+func (g *panLayer) Cleanup() {
     g.surface.Free()
     g.child.Cleanup()
 }
 
-func (g *panGame) calculatePan(mouse, pan_region_size, current_pan, pannable_size, window_size uint16, deltaTime int64) int16 {
+func (g *panLayer) calculatePan(mouse, pan_region_size, current_pan, pannable_size, window_size uint16, deltaTime int64) int16 {
     max_pan := float32((int64(g.pan_speed) * deltaTime) / int64(time.Second))
 
     if mouse < pan_region_size {
@@ -108,7 +108,7 @@ func (g *panGame) calculatePan(mouse, pan_region_size, current_pan, pannable_siz
     return 0
 }
 
-func (g *panGame) Update(deltaTime int64) {
+func (g *panLayer) Update(deltaTime int64) {
     var mouse_x int
     var mouse_y int
 
@@ -120,7 +120,7 @@ func (g *panGame) Update(deltaTime int64) {
     g.view_y = uint16(int16(g.view_y) + g.calculatePan(uint16(mouse_y), g.pan_region_y, g.view_y, g.child_y, parent_y, deltaTime))
 }
 
-func (g *panGame) Render(target *sdl.Surface) {
+func (g *panLayer) Render(target *sdl.Surface) {
     g.child.Render(g.surface)
     g.surface.Flip()
 
@@ -143,11 +143,11 @@ func (g *panGame) Render(target *sdl.Surface) {
     )
 }
 
-func (g *panGame) GetSize() (uint16, uint16) {
+func (g *panLayer) GetSize() (uint16, uint16) {
     return g.child.GetSize()
 }
 
-func (g *panGame) GetXYOffsets() (uint16, uint16) {
+func (g *panLayer) GetXYOffsets() (uint16, uint16) {
     return g.view_x, g.view_y
 }
 
