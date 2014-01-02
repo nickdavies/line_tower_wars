@@ -51,7 +51,7 @@ func (ps *PlayerStage) initMap() {
             ps.Tiles[col][Wall_Top + row] = terrain.T_Spawn
         }
 
-        for row := 0; row < Wall_Bottom; row++ {
+        for row := 0; row < Goal_size; row++ {
             ps.Tiles[col][PlayerStageHeight - row - Wall_Bottom - 1] = terrain.T_Goal
         }
     }
