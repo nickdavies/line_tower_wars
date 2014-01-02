@@ -68,7 +68,7 @@ func NewPanLayer(pan_region_x, pan_region_y, starting_x, starting_y, pan_speed u
 func (g *panLayer) Setup() (err error) {
     g.child_x, g.child_y = g.child.GetSize()
 
-    g.surface, err = util.CreateSurface(true, int(g.child_x), int(g.child_y))
+    g.surface, err = util.CreateSurface(true, true, g.child_x, g.child_y)
     if err != nil {
         return err
     }
@@ -117,6 +117,8 @@ func (g *panLayer) Update(deltaTime int64) {
 
     g.view_x = uint16(int16(g.view_x) + g.calculatePan(uint16(mouse_x), g.pan_region_x, g.view_x, g.child_x, parent_x, deltaTime))
     g.view_y = uint16(int16(g.view_y) + g.calculatePan(uint16(mouse_y), g.pan_region_y, g.view_y, g.child_y, parent_y, deltaTime))
+
+    g.child.Update(deltaTime)
 }
 
 func (g *panLayer) Render(target *sdl.Surface) {

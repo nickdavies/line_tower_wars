@@ -21,8 +21,8 @@ var NoSuchTextureErr = errors.New("No such texture exists")
 type Texture struct {
     Id int
     Name string
-    Height int
-    Width int
+    Height uint16
+    Width uint16
     Surface *sdl.Surface
 }
 
@@ -33,7 +33,7 @@ type TextureMap interface {
     GetId(texture_id int) *Texture
 }
 
-func NewTextureMap(square_size int, texture_dir string) (TextureMap, error) {
+func NewTextureMap(square_size uint16, texture_dir string) (TextureMap, error) {
 
     textures, texture_names, err := loadTextures(texture_dir)
     if err != nil {
@@ -141,8 +141,8 @@ func loadTextures(texture_dir string) (textures map[int]*Texture, texture_names 
         textures[int(id)] = &Texture{
             Id: int(id),
             Name: name,
-            Width: int(width),
-            Height: int(height),
+            Width: uint16(width),
+            Height: uint16(height),
             Surface: texture_surface,
         }
         texture_names[name] = int(id)

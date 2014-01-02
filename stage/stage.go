@@ -15,8 +15,8 @@ const Spawn_Size = 4
 const Goal_size = 4
 
 type Stage struct {
-    Rows int
-    Cols int
+    Rows uint16
+    Cols uint16
 
     NumPlayers int
     players []*PlayerStage
@@ -38,22 +38,24 @@ func NewStage(num_players int) *Stage {
         tiles[i] = make([]terrain.Terrain, rows)
     }
 
+    s := &Stage{
+        Rows: uint16(rows),
+        Cols: uint16(cols),
+
+        NumPlayers: num_players,
+
+        Tiles: tiles,
+    }
 
     // Build Players
     players := make([]*PlayerStage, num_players)
     for i := 0; i < num_players; i++ {
-        players[i] = NewPlayerStage(i, tiles)
+        players[i] = NewPlayerStage(i, tiles, s)
     }
 
-    return &Stage{
-        Rows: rows,
-        Cols: cols,
+    s.players = players
 
-        NumPlayers: num_players,
-        players: players,
-
-        Tiles: tiles,
-    }
+    return s
 }
 
 func (s *Stage) GetPlayer(player int) *PlayerStage {
@@ -64,4 +66,21 @@ func (s *Stage) GetPlayer(player int) *PlayerStage {
 
     return s.players[player]
 }
+
+func (s *Stage) GetTerrain(row, col uint16) terrain.Terrain {
+    if row > s.Rows {
+        return terrain.T_NIL
+    }
+
+    if col > s.Cols {
+        return terrain.T_NIL
+    }
+
+    return s.Tiles[col][row]
+}
+
+func (s *Stage) GetOwner(row, col uint16) int {
+    return int(col / PlayerStageWidth)
+}
+
 

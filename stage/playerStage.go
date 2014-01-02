@@ -5,23 +5,43 @@ import (
 )
 
 type PlayerStage struct {
+    start uint16
+    end uint16
+
     PlayerNum int
     Tiles [][]terrain.Terrain
+    Stage *Stage
 }
 
-func NewPlayerStage(player_num int, tiles [][]terrain.Terrain) *PlayerStage {
+func NewPlayerStage(player_num int, tiles [][]terrain.Terrain, s *Stage) *PlayerStage {
 
     start := player_num * PlayerStageWidth
     end := start + PlayerStageWidth
 
     player := &PlayerStage{
+        start: uint16(start),
+        end: uint16(end),
+
         PlayerNum: player_num,
         Tiles: tiles[start:end],
+        Stage: s,
     }
 
     player.initMap()
 
     return player
+}
+
+func (ps *PlayerStage) Buildable(row, col uint16) bool {
+    if row > PlayerStageHeight {
+        return false
+    }
+
+    if col > ps.end || col < ps.start {
+        return false
+    }
+
+    return ps.Stage.Tiles[col][row].Buildable()
 }
 
 func (ps *PlayerStage) initMap() {

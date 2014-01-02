@@ -34,7 +34,7 @@ type stageLayer struct {
     size_y uint16
 
     s *stage.Stage
-    square_size int
+    square_size uint16
 
     texture_map texture.TextureMap
     terrain_textures map[terrain.Terrain]*texture.Texture
@@ -42,13 +42,13 @@ type stageLayer struct {
     surface *sdl.Surface
 }
 
-func NewStageLayer(s *stage.Stage, texture_map texture.TextureMap, square_size int, child Layer) Layer {
+func NewStageLayer(s *stage.Stage, texture_map texture.TextureMap, square_size uint16, child Layer) Layer {
 
     sg := &stageLayer{
         layerBase: layerBase{child: child},
 
-        size_x: uint16(square_size * len(s.Tiles)),
-        size_y: uint16(square_size * len(s.Tiles[0])),
+        size_x: square_size * uint16(len(s.Tiles)),
+        size_y: square_size * uint16(len(s.Tiles[0])),
 
         s: s,
         square_size: square_size,
@@ -75,37 +75,44 @@ func NewStageLayer(s *stage.Stage, texture_map texture.TextureMap, square_size i
 }
 
 func (g *stageLayer) Setup() (err error) {
-    g.surface, err = util.CreateSurface(true, int(g.size_x), int(g.size_y))
+    g.surface, err = util.CreateSurface(true, true, g.size_x, g.size_y)
     if err != nil {
         return err
     }
 
-    for row := 0; row < len(g.s.Tiles[0]); row++ {
-        for col := 0; col < len(g.s.Tiles); col++ {
+    var row uint16
+    var col uint16
+    var y_tile uint16
+    var x_tile uint16
+    var y_tiles uint16
+    var x_tiles uint16
+
+    for row = 0; row < uint16(len(g.s.Tiles[0])); row++ {
+        for col = 0; col < uint16(len(g.s.Tiles)); col++ {
             texture := g.terrain_textures[g.s.Tiles[col][row]]
 
-            x_tiles := g.square_size / texture.Width
-            y_tiles := g.square_size / texture.Height
+            x_tiles = g.square_size / texture.Width
+            y_tiles = g.square_size / texture.Height
 
             if x_tiles == 0 || y_tiles == 0 {
                 panic(fmt.Errorf("terrain (%s) texture is larger than square_size (%d, %d) > %d", texture.Name, texture.Width, texture.Height, g.square_size))
             }
 
-            for y_tile := 0; y_tile < y_tiles; y_tile++ {
-                for x_tile := 0; x_tile < x_tiles; x_tile++ {
+            for y_tile = 0; y_tile < y_tiles; y_tile++ {
+                for x_tile = 0; x_tile < x_tiles; x_tile++ {
                     errno := g.surface.Blit(
                         &sdl.Rect{
                             X: int16(col * g.square_size + x_tile * texture.Width),
                             Y: int16(row * g.square_size + y_tile * texture.Height),
-                            W: uint16(texture.Width),
-                            H: uint16(texture.Height),
+                            W: texture.Width,
+                            H: texture.Height,
                         },
                         texture.Surface,
                         &sdl.Rect{
                             X: 0,
                             Y: 0,
-                            W: uint16(texture.Width),
-                            H: uint16(texture.Height),
+                            W: texture.Width,
+                            H: texture.Height,
                         },
                     )
 

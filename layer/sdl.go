@@ -29,12 +29,12 @@ type sdlLayer struct {
 }
 
 
-func NewSdlLayer(display *sdl.Surface, x, y int, child Layer) Layer {
+func NewSdlLayer(display *sdl.Surface, x, y uint16, child Layer) Layer {
     g := &sdlLayer{
         layerBase: layerBase{child: child},
 
-        x: uint16(x),
-        y: uint16(y),
+        x: x,
+        y: y,
 
         display: display,
     }
