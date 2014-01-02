@@ -10,6 +10,7 @@ import (
 
 import (
     "github.com/nickdavies/line_tower_wars/stage"
+    "github.com/nickdavies/line_tower_wars/terrain"
 )
 
 type stageLayer struct {
@@ -32,7 +33,7 @@ type stageLayer struct {
 
     s *stage.Stage
     square_size int
-    terrain_colours map[stage.Terrain]uint32
+    terrain_colours map[terrain.Terrain]uint32
 
     surface *sdl.Surface
 }
@@ -48,11 +49,11 @@ func NewStageLayer(s *stage.Stage, square_size int, child Layer) Layer {
         s: s,
         square_size: square_size,
 
-        terrain_colours: map[stage.Terrain]uint32{
-            stage.T_Grass: 0x00ff00,
-            stage.T_Wall: 0xd1d1d1,
-            stage.T_Spawn: 0x3333cc,
-            stage.T_Goal: 0xff0000,
+        terrain_colours: map[terrain.Terrain]uint32{
+            terrain.T_Grass: 0x00ff00,
+            terrain.T_Wall: 0xd1d1d1,
+            terrain.T_Spawn: 0x3333cc,
+            terrain.T_Goal: 0xff0000,
         },
     }
 

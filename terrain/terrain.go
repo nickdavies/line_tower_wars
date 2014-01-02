@@ -1,4 +1,4 @@
-package stage
+package terrain
 
 type Terrain int
 
@@ -7,10 +7,11 @@ const T_Wall Terrain = 1
 const T_Spawn Terrain= 2
 const T_Goal Terrain = 3
 
-const Wall_Side = 4
-const Wall_Top = 2
-const Wall_Bottom = 2
+func (t Terrain) Buildable() bool {
+    if t == T_Grass {
+        return true
+    }
 
-const Spawn_Size = 4
-const Goal_size = 4
+    return false
+}
 

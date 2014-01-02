@@ -1,7 +1,18 @@
 package stage
 
+import (
+    "github.com/nickdavies/line_tower_wars/terrain"
+)
+
 const PlayerStageWidth = 20
 const PlayerStageHeight = 60
+
+const Wall_Side = 4
+const Wall_Top = 2
+const Wall_Bottom = 2
+
+const Spawn_Size = 4
+const Goal_size = 4
 
 type Stage struct {
     Rows int
@@ -10,7 +21,7 @@ type Stage struct {
     NumPlayers int
     players []*PlayerStage
 
-    Tiles [][]Terrain
+    Tiles [][]terrain.Terrain
 }
 
 func NewStage(num_players int) *Stage {
@@ -20,11 +31,11 @@ func NewStage(num_players int) *Stage {
     rows := PlayerStageHeight
 
     // make all the columns
-    tiles := make([][]Terrain, cols)
+    tiles := make([][]terrain.Terrain, cols)
 
     // Fill each column with a column
     for i := 0; i < cols; i++ {
-        tiles[i] = make([]Terrain, rows)
+        tiles[i] = make([]terrain.Terrain, rows)
     }
 
 
