@@ -97,7 +97,12 @@ func (g *stageLayer) Setup() (err error) {
                             H: uint16(texture.Height),
                         },
                         texture.Surface,
-                        nil,
+                        &sdl.Rect{
+                            X: 0,
+                            Y: 0,
+                            W: uint16(texture.Width),
+                            H: uint16(texture.Height),
+                        },
                     )
 
                     if errno != 0 {
