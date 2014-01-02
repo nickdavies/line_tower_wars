@@ -14,7 +14,7 @@ const Wall_Bottom = 1
 const Shadow_Side = 4
 
 const Spawn_Size = 4
-const Goal_size = 4
+const Goal_size = 2
 
 type Stage struct {
     Rows uint16
