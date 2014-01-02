@@ -3,11 +3,11 @@ package layer
 import "fmt"
 
 import (
-    "github.com/banthar/Go-SDL/sdl"
+    "github.com/neagix/Go-SDL/sdl"
 )
 
 import (
-    "../stage"
+    "github.com/nickdavies/line_tower_wars/stage"
 )
 
 type entityLayer struct {
@@ -55,10 +55,10 @@ func NewEntityLayer(s *stage.Stage, square_size int, child Layer) Layer {
     return eg
 }
 
-func (g *entityLayer) HandleEvent(event sdl.Event) {
+func (g *entityLayer) HandleEvent(event interface{}) {
     switch event.(type) {
-    case *sdl.MouseButtonEvent:
-        e := event.(*sdl.MouseButtonEvent)
+    case sdl.MouseButtonEvent:
+        e := event.(sdl.MouseButtonEvent)
         if e.Type == sdl.MOUSEBUTTONDOWN {
             fmt.Println("click", e.X, e.Y)
         }

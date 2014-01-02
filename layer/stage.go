@@ -5,11 +5,11 @@ import (
 )
 
 import (
-    "github.com/banthar/Go-SDL/sdl"
+    "github.com/neagix/Go-SDL/sdl"
 )
 
 import (
-    "../stage"
+    "github.com/nickdavies/line_tower_wars/stage"
 )
 
 type stageLayer struct {
@@ -74,7 +74,7 @@ func (g *stageLayer) Setup() error {
         return fmt.Errorf("No surface created: %s", sdl.GetError())
     }
 
-    g.surface = sdl.DisplayFormat(g.surface)
+    g.surface = g.surface.DisplayFormat()
     if g.surface == nil {
         return fmt.Errorf("No surface created: %s", sdl.GetError())
     }

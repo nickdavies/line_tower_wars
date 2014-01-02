@@ -6,7 +6,7 @@ import (
 )
 
 import (
-    "github.com/banthar/Go-SDL/sdl"
+    "github.com/neagix/Go-SDL/sdl"
 )
 
 type sdlLayer struct {
@@ -69,13 +69,13 @@ func (g *sdlLayer) Cleanup() {
     sdl.Quit()
 }
 
-func (g *sdlLayer) HandleEvent(event sdl.Event) {
+func (g *sdlLayer) HandleEvent(event interface{}) {
     switch event.(type) {
-    case *sdl.QuitEvent:
+    case sdl.QuitEvent:
         g.End()
         return
-    case *sdl.KeyboardEvent:
-        if event.(*sdl.KeyboardEvent).Keysym.Sym == sdl.K_F1 {
+    case sdl.KeyboardEvent:
+        if event.(sdl.KeyboardEvent).Keysym.Sym == sdl.K_F1 {
             g.End()
         }
         return
@@ -106,6 +106,7 @@ func (g *sdlLayer) GetSize() (uint16, uint16) {
 
 func (g *sdlLayer) Run() error {
     var err error
+    var end_ch = make(chan interface{})
 
     err = g.Setup()
     if err != nil {
@@ -113,19 +114,28 @@ func (g *sdlLayer) Run() error {
     }
     defer g.Cleanup()
 
+    go func() {
+        for {
+            select {
+            case <-end_ch:
+                return
+            case event, ok := <-sdl.Events:
+                if !ok {
+                    g.running = false
+                    continue
+                }
+                g.HandleEvent(event)
+            }
+        }
+    }()
+    defer func() {
+        end_ch <-nil
+    }()
+
     var last_time = time.Now().UnixNano()
 
     g.running = true
     for g.running {
-        // Process Events
-        for {
-            event := sdl.PollEvent()
-            if event == nil {
-                break
-            }
-            g.HandleEvent(event)
-        }
-
         // Update State
         g.Update(time.Now().UnixNano() - last_time)
         last_time = time.Now().UnixNano()

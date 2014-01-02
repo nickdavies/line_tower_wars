@@ -1,7 +1,7 @@
 package layer
 
 import (
-    "github.com/banthar/Go-SDL/sdl"
+    "github.com/neagix/Go-SDL/sdl"
 )
 
 type Layer interface {
@@ -9,7 +9,7 @@ type Layer interface {
     Setup() error
     Cleanup()
 
-    HandleEvent(event sdl.Event)
+    HandleEvent(event interface{})
 
     Update(deltaTime int64)
     Render(target *sdl.Surface)
@@ -65,7 +65,7 @@ type voidEvents struct {
     *layerBase
 }
 
-func (g *voidEvents) HandleEvent(event sdl.Event) {
+func (g *voidEvents) HandleEvent(event interface{}) {
     if g.child != nil {
         g.child.HandleEvent(event)
     }
