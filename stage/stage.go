@@ -4,12 +4,14 @@ import (
     "github.com/nickdavies/line_tower_wars/terrain"
 )
 
-const PlayerStageWidth = 30
+const PlayerStageWidth = 21
 const PlayerStageHeight = 60
 
-const Wall_Side = 2
+const Wall_Side = 1
 const Wall_Top = 1
 const Wall_Bottom = 1
+
+const Shadow_Side = 4
 
 const Spawn_Size = 4
 const Goal_size = 4

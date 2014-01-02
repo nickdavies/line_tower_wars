@@ -57,6 +57,7 @@ func NewStageLayer(s *stage.Stage, texture_map texture.TextureMap, square_size u
         terrain_textures: map[terrain.Terrain]*texture.Texture{
             terrain.T_Grass: texture_map.GetName("grass_center"),
             terrain.T_Wall:  texture_map.GetName("wall_center"),
+            terrain.T_Shadow:  texture_map.GetName("shadow_center"),
             terrain.T_Spawn: texture_map.GetName("spawn_center"),
             terrain.T_Goal:  texture_map.GetName("goal_center"),
         },

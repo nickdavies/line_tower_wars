@@ -1,6 +1,7 @@
-0, 64, 64, grass_center, terrain/grass_center.png
-1, 64, 64, wall_center,  terrain/wall_center.png
-2, 64, 64, spawn_center, terrain/spawn_center.png
-3, 64, 64, goal_center,  terrain/goal_center.png
+0, 64, 64, grass_center,   terrain/grass_center.png
+1, 64, 64, wall_center,    terrain/wall_center.png
+2, 64, 64, shadow_center,  terrain/shadow_center.png
+3, 64, 64, spawn_center,   terrain/spawn_center.png
+4, 64, 64, goal_center,    terrain/goal_center.png
 
-4, 128, 128, turret_basic, turret/tank.png
+5, 128, 128, turret_basic, turret/tank.png

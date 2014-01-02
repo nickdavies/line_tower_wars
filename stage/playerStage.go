@@ -58,15 +58,25 @@ func (ps *PlayerStage) initMap() {
     }
 
     // Set both sides to wall
-    for col := 0; col < Wall_Side; col++ {
+    for col := 0; col < Shadow_Side; col++ {
         for row := 0; row < PlayerStageHeight; row++ {
-            ps.Tiles[col][row] = terrain.T_Wall
-            ps.Tiles[PlayerStageWidth - col - 1][row] = terrain.T_Wall
+            ps.Tiles[col][row] = terrain.T_Shadow
+            ps.Tiles[PlayerStageWidth - col - 1][row] = terrain.T_Shadow
         }
     }
 
+    // Set both sides to wall
+    for col := 0; col < Wall_Side; col++ {
+        for row := 0; row < PlayerStageHeight; row++ {
+            ps.Tiles[col + Shadow_Side][row] = terrain.T_Wall
+            ps.Tiles[PlayerStageWidth - Shadow_Side - col - 1][row] = terrain.T_Wall
+        }
+    }
+
+    border_size := Wall_Side + Shadow_Side
+
     // Setup goal and spawn area
-    for col := Wall_Side; col < (PlayerStageWidth - Wall_Side); col++ {
+    for col := border_size; col < (PlayerStageWidth - border_size); col++ {
         for row := 0; row < Spawn_Size; row++ {
             ps.Tiles[col][Wall_Top + row] = terrain.T_Spawn
         }
