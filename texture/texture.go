@@ -14,7 +14,7 @@ import (
     "github.com/neagix/Go-SDL/sdl"
 )
 
-const TEXTURE_SIZE = 64
+const TEXTURE_SIZE = 32
 const texture_list_filename = "textures.txt"
 
 var NoSuchTextureErr = errors.New("No such texture exists")

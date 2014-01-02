@@ -35,9 +35,9 @@ func cleanup(display *sdl.Surface) {
 func main() {
 
     players := 2
-    square_size := 128
-    screen_x := 1500
-    screen_y := 900
+    square_size := 64
+    screen_x := 1920
+    screen_y := 1080
     texture_dir := "./gfx/textures"
 
     display, err := setup(screen_x, screen_y)
