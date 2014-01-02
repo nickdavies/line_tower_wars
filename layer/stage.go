@@ -87,6 +87,10 @@ func (g *stageLayer) Setup() (err error) {
             x_tiles := g.square_size / texture.Width
             y_tiles := g.square_size / texture.Height
 
+            if x_tiles == 0 || y_tiles == 0 {
+                panic(fmt.Errorf("terrain (%s) texture is larger than square_size (%d, %d) > %d", texture.Name, texture.Width, texture.Height, g.square_size))
+            }
+
             for y_tile := 0; y_tile < y_tiles; y_tile++ {
                 for x_tile := 0; x_tile < x_tiles; x_tile++ {
                     errno := g.surface.Blit(
