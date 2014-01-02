@@ -31,7 +31,11 @@ func (p *Player) Buildable(row, col uint16) (bool) {
     return p.myStage.Buildable(row, col)
 }
 
-func (t *Player) BuildTower(row, col uint16) (user_message string) {
-    t.Towers[loc{row, col}] = &towers.Tower{}
+func (p *Player) BuildTower(row, col uint16) (user_message string) {
+    _, ok := p.Towers[loc{row, col}]
+    if ok {
+        return "tower exists"
+    }
+    p.Towers[loc{row, col}] = &towers.Tower{}
     return ""
 }
