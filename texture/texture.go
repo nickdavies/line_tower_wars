@@ -98,7 +98,12 @@ func loadTextures(texture_dir string) (textures map[int]*Texture, texture_names 
     scanner := bufio.NewScanner(f)
     for scanner.Scan() {
         line_num++
-        fields := strings.Split(scanner.Text(), ",")
+        line := strings.TrimSpace(scanner.Text())
+        if len(line) == 0 {
+            continue
+        }
+
+        fields := strings.Split(line, ",")
 
         if len(fields) != 5 {
             return nil, nil, fmt.Errorf("Error on line %d: wrong number of fields got %d expected 5", line_num, len(fields))
