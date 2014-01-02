@@ -14,7 +14,6 @@ import (
     "github.com/neagix/Go-SDL/sdl"
 )
 
-const TEXTURE_SIZE = 32
 const texture_list_filename = "textures.txt"
 
 var NoSuchTextureErr = errors.New("No such texture exists")
@@ -35,10 +34,6 @@ type TextureMap interface {
 }
 
 func NewTextureMap(square_size int, texture_dir string) (TextureMap, error) {
-
-    if square_size % TEXTURE_SIZE != 0 || square_size < TEXTURE_SIZE {
-        panic("square_size must be a multiple of texture size")
-    }
 
     textures, texture_names, err := loadTextures(texture_dir)
     if err != nil {
@@ -105,15 +100,23 @@ func loadTextures(texture_dir string) (textures map[int]*Texture, texture_names 
         line_num++
         fields := strings.Split(scanner.Text(), ",")
 
-        if len(fields) != 3 {
-            return nil, nil, fmt.Errorf("Error on line %d: wrong number of fields got %d expected 3", line_num, len(fields))
+        if len(fields) != 5 {
+            return nil, nil, fmt.Errorf("Error on line %d: wrong number of fields got %d expected 5", line_num, len(fields))
         }
 
-        filename := strings.TrimSpace(fields[2])
-        name := strings.TrimSpace(fields[1])
+        filename := strings.TrimSpace(fields[4])
+        name := strings.TrimSpace(fields[3])
         id, err := strconv.ParseInt(strings.TrimSpace(fields[0]), 10, 32)
         if err != nil {
             return nil, nil, fmt.Errorf("Error on line %d: texture id is invalid", line_num)
+        }
+        width, err := strconv.ParseInt(strings.TrimSpace(fields[1]), 10, 32)
+        if err != nil {
+            return nil, nil, fmt.Errorf("Error on line %d: texture width is invalid", line_num)
+        }
+        height, err := strconv.ParseInt(strings.TrimSpace(fields[2]), 10, 32)
+        if err != nil {
+            return nil, nil, fmt.Errorf("Error on line %d: texture height is invalid", line_num)
         }
 
         texture_surface, err := loadTexture(path.Join(texture_dir, filename))
@@ -133,8 +136,8 @@ func loadTextures(texture_dir string) (textures map[int]*Texture, texture_names 
         textures[int(id)] = &Texture{
             Id: int(id),
             Name: name,
-            Width: TEXTURE_SIZE,
-            Height: TEXTURE_SIZE,
+            Width: int(width),
+            Height: int(height),
             Surface: texture_surface,
         }
         texture_names[name] = int(id)
@@ -157,7 +160,4 @@ func loadTexture(texture_file string) (*sdl.Surface, error) {
 
     return surface, nil
 }
-
-
-
 
