@@ -1,0 +1,4 @@
+0, grass_center, terrain/grass_center.png
+1, wall_center, terrain/wall_center.png
+2, spawn_center, terrain/spawn_center.png
+3, goal_center, terrain/goal_center.png

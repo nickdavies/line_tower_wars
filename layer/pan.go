@@ -9,6 +9,10 @@ import (
     "github.com/neagix/Go-SDL/sdl"
 )
 
+import (
+    "github.com/nickdavies/line_tower_wars/util"
+)
+
 type panLayer struct {
     layerBase
 
@@ -61,17 +65,12 @@ func NewPanLayer(pan_region_x, pan_region_y, starting_x, starting_y, pan_speed u
     return pg
 }
 
-func (g *panLayer) Setup() error {
+func (g *panLayer) Setup() (err error) {
     g.child_x, g.child_y = g.child.GetSize()
 
-    g.surface = sdl.CreateRGBSurface(sdl.HWSURFACE, int(g.child_x), int(g.child_y), 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000)
-    if g.surface == nil {
-        return fmt.Errorf("No surface created: %s", sdl.GetError())
-    }
-
-    g.surface = g.surface.DisplayFormat()
-    if g.surface == nil {
-        return fmt.Errorf("No surface created: %s", sdl.GetError())
+    g.surface, err = util.CreateSurface(true, int(g.child_x), int(g.child_y))
+    if err != nil {
+        return err
     }
 
     return g.child.Setup()

@@ -1,8 +1,8 @@
 package layer
 
 import (
-    "time"
     "fmt"
+    "time"
 )
 
 import (
@@ -16,6 +16,9 @@ type sdlLayer struct {
     // no offsets
     voidOffsets
 
+    // no setup
+    voidSetup
+
     running bool
 
     // Display size
@@ -27,46 +30,24 @@ type sdlLayer struct {
 }
 
 
-func NewSdlLayer(x, y uint16, child Layer) Layer {
+func NewSdlLayer(display *sdl.Surface, x, y int, child Layer) Layer {
     g := &sdlLayer{
         layerBase: layerBase{child: child},
 
-        x: x,
-        y: y,
+        x: uint16(x),
+        y: uint16(y),
+
+        display: display,
     }
 
     g.voidOffsets = voidOffsets{&g.layerBase}
+    g.voidSetup = voidSetup{&g.layerBase}
 
     if child != nil {
         child.setParent(g)
     }
 
     return g
-}
-
-func (g *sdlLayer) Setup() error {
-    var errno = sdl.Init(sdl.INIT_EVERYTHING)
-    if errno != 0 {
-        return fmt.Errorf("Init failed: %s", sdl.GetError())
-    }
-
-    g.display = sdl.SetVideoMode(int(g.x), int(g.y), 32, sdl.HWSURFACE | sdl.DOUBLEBUF | sdl.FULLSCREEN)
-    if g.display == nil {
-        return fmt.Errorf("No surface created: %s", sdl.GetError())
-    }
-
-    if g.child != nil {
-        return g.child.Setup()
-    }
-
-    return nil
-}
-
-func (g *sdlLayer) Cleanup() {
-    if g.child != nil {
-        g.child.Cleanup()
-    }
-    sdl.Quit()
 }
 
 func (g *sdlLayer) HandleEvent(event interface{}) {

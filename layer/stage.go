@@ -11,6 +11,8 @@ import (
 import (
     "github.com/nickdavies/line_tower_wars/stage"
     "github.com/nickdavies/line_tower_wars/terrain"
+    "github.com/nickdavies/line_tower_wars/texture"
+    "github.com/nickdavies/line_tower_wars/util"
 )
 
 type stageLayer struct {
@@ -33,12 +35,14 @@ type stageLayer struct {
 
     s *stage.Stage
     square_size int
-    terrain_colours map[terrain.Terrain]uint32
+
+    texture_map texture.TextureMap
+    terrain_textures map[terrain.Terrain]*texture.Texture
 
     surface *sdl.Surface
 }
 
-func NewStageLayer(s *stage.Stage, square_size int, child Layer) Layer {
+func NewStageLayer(s *stage.Stage, texture_map texture.TextureMap, square_size int, child Layer) Layer {
 
     sg := &stageLayer{
         layerBase: layerBase{child: child},
@@ -49,11 +53,12 @@ func NewStageLayer(s *stage.Stage, square_size int, child Layer) Layer {
         s: s,
         square_size: square_size,
 
-        terrain_colours: map[terrain.Terrain]uint32{
-            terrain.T_Grass: 0x00ff00,
-            terrain.T_Wall: 0xd1d1d1,
-            terrain.T_Spawn: 0x3333cc,
-            terrain.T_Goal: 0xff0000,
+        texture_map: texture_map,
+        terrain_textures: map[terrain.Terrain]*texture.Texture{
+            terrain.T_Grass: texture_map.GetName("grass_center"),
+            terrain.T_Wall:  texture_map.GetName("wall_center"),
+            terrain.T_Spawn: texture_map.GetName("spawn_center"),
+            terrain.T_Goal:  texture_map.GetName("goal_center"),
         },
     }
 
@@ -69,25 +74,37 @@ func NewStageLayer(s *stage.Stage, square_size int, child Layer) Layer {
     return sg
 }
 
-func (g *stageLayer) Setup() error {
-    g.surface = sdl.CreateRGBSurface(sdl.HWSURFACE, int(g.size_x), int(g.size_y), 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000)
-    if g.surface == nil {
-        return fmt.Errorf("No surface created: %s", sdl.GetError())
-    }
-
-    g.surface = g.surface.DisplayFormat()
-    if g.surface == nil {
-        return fmt.Errorf("No surface created: %s", sdl.GetError())
+func (g *stageLayer) Setup() (err error) {
+    g.surface, err = util.CreateSurface(true, int(g.size_x), int(g.size_y))
+    if err != nil {
+        return err
     }
 
     for row := 0; row < len(g.s.Tiles[0]); row++ {
         for col := 0; col < len(g.s.Tiles); col++ {
-            g.surface.FillRect(&sdl.Rect{
-                X: int16(col * g.square_size),
-                Y: int16(row * g.square_size),
-                W: uint16(g.square_size),
-                H: uint16(g.square_size),
-            }, g.terrain_colours[g.s.Tiles[col][row]])
+            texture := g.terrain_textures[g.s.Tiles[col][row]]
+
+            x_tiles := g.square_size / texture.Width
+            y_tiles := g.square_size / texture.Height
+
+            for y_tile := 0; y_tile < y_tiles; y_tile++ {
+                for x_tile := 0; x_tile < x_tiles; x_tile++ {
+                    errno := g.surface.Blit(
+                        &sdl.Rect{
+                            X: int16(col * g.square_size + x_tile * texture.Width),
+                            Y: int16(row * g.square_size + y_tile * texture.Height),
+                            W: uint16(texture.Width),
+                            H: uint16(texture.Height),
+                        },
+                        texture.Surface,
+                        nil,
+                    )
+
+                    if errno != 0 {
+                        return fmt.Errorf("Blit failed: %s", sdl.GetError())
+                    }
+                }
+            }
         }
     }
 
