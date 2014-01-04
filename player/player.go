@@ -32,9 +32,8 @@ func (p *Player) Buildable(row, col uint16) (bool) {
 }
 
 func (p *Player) BuildTower(row, col uint16) (user_message string) {
-    _, ok := p.Towers[loc{row, col}]
-    if ok {
-        return "tower exists"
+    if !p.Buildable(row, col) {
+        return "not buildable"
     }
     p.Towers[loc{row, col}] = &towers.Tower{}
     return ""
