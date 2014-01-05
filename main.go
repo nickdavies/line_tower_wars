@@ -2,6 +2,8 @@ package main
 
 import (
     "fmt"
+    "time"
+    "math/rand"
 )
 
 import (
@@ -12,6 +14,7 @@ import (
     "github.com/nickdavies/line_tower_wars/layer"
     "github.com/nickdavies/line_tower_wars/stage"
     "github.com/nickdavies/line_tower_wars/player"
+    "github.com/nickdavies/line_tower_wars/unit"
     "github.com/nickdavies/line_tower_wars/texture"
 )
 
@@ -34,6 +37,9 @@ func cleanup(display *sdl.Surface) {
 }
 
 func main() {
+    var seed int64 = time.Now().UnixNano()
+    seed = 0
+    rand.Seed(seed)
 
     var players int = 2
     var square_size uint16 = 128
@@ -43,6 +49,27 @@ func main() {
 
     s := stage.NewStage(players)
     me := player.NewPlayer(s.GetPlayer(0))
+
+    var left uint16 = 0
+    var row uint16
+    var col uint16
+
+    for row = 1; row < stage.PlayerStageHeight; row += 2 {
+        for col = 0; col < 10; col++ {
+            if rand.Intn(100) < 90 {
+                me.BuildTower(row, col + stage.Shadow_Side + stage.Wall_Side + left, true)
+            }
+        }
+        if left == 0 {
+            left = 1
+        } else {
+            left = 0
+        }
+    }
+
+    me.Repath()
+    me.AntiCheat = &unit.Unit{Loc: me.Path.Start(), Speed: 1}
+    me.AntiCheat.SetPath(me.Path)
 
     display, err := setup(screen_x, screen_y)
     if err != nil {

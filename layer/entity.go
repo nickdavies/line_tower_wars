@@ -1,5 +1,7 @@
 package layer
 
+//import "fmt"
+
 import (
     "github.com/neagix/Go-SDL/sdl"
 )
@@ -81,7 +83,7 @@ func (g *entityLayer) HandleEvent(event interface{}) {
         e := event.(sdl.MouseButtonEvent)
         if e.Type == sdl.MOUSEBUTTONDOWN {
             x_off, y_off := g.GetXYOffsets()
-            g.player.BuildTower( (e.Y + y_off) / g.square_size, (e.X + x_off) / g.square_size)
+            g.player.BuildTower( (e.Y + y_off) / g.square_size, (e.X + x_off) / g.square_size, false)
         }
     default:
     }
@@ -92,6 +94,8 @@ func (g *entityLayer) HandleEvent(event interface{}) {
 }
 
 func (g *entityLayer) Update(deltaTime int64) {
+
+    g.player.AntiCheat.Update(deltaTime)
 
     if g.child != nil {
         g.child.Update(deltaTime)
@@ -118,6 +122,18 @@ func (g *entityLayer) Render(target *sdl.Surface) {
             },
             g.texture_map.GetName("turret_basic").Surface,
             nil,
+        )
+    }
+
+    if g.player.AntiCheat != nil {
+        target.FillRect(
+            &sdl.Rect{
+                X: int16(g.player.AntiCheat.Loc.Col * float64(g.square_size)) - 32,
+                Y: int16(g.player.AntiCheat.Loc.Row * float64(g.square_size)) - 32,
+                H: 64,
+                W: 64,
+            },
+            0x0000ff,
         )
     }
 

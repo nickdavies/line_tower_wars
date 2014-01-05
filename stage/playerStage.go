@@ -32,6 +32,14 @@ func NewPlayerStage(player_num int, tiles [][]terrain.Terrain, s *Stage) *Player
     return player
 }
 
+func (ps *PlayerStage) FirstGrass() (row, col uint16) {
+    return Wall_Top + Spawn_Size, ps.start + Wall_Side + Shadow_Side
+}
+
+func (ps *PlayerStage) LastGrass() (row, col uint16) {
+    return PlayerStageHeight - Wall_Bottom - Goal_Size, ps.end
+}
+
 func (ps *PlayerStage) Buildable(row, col uint16) bool {
     if row > PlayerStageHeight {
         return false
@@ -81,7 +89,7 @@ func (ps *PlayerStage) initMap() {
             ps.Tiles[col][Wall_Top + row] = terrain.T_Spawn
         }
 
-        for row := 0; row < Goal_size; row++ {
+        for row := 0; row < Goal_Size; row++ {
             ps.Tiles[col][PlayerStageHeight - row - Wall_Bottom - 1] = terrain.T_Goal
         }
     }

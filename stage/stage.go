@@ -5,7 +5,7 @@ import (
 )
 
 const PlayerStageWidth = 21
-const PlayerStageHeight = 60
+const PlayerStageHeight = 59
 
 const Wall_Side = 1
 const Wall_Top = 1
@@ -14,7 +14,15 @@ const Wall_Bottom = 1
 const Shadow_Side = 4
 
 const Spawn_Size = 4
-const Goal_size = 2
+const Goal_Size = 2
+
+var Grass_Rows = -1
+var Grass_Cols = -1
+
+func init() {
+    Grass_Rows = PlayerStageHeight - Wall_Top - Wall_Bottom - Spawn_Size - Goal_Size
+    Grass_Cols = PlayerStageWidth - 2 * Shadow_Side - 2 * Wall_Side
+}
 
 type Stage struct {
     Rows uint16
