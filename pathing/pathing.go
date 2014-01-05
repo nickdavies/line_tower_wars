@@ -80,18 +80,9 @@ func (p *Path) RouteTo(source Loc) *Path {
         },
     }
 
-    path := p.aStar.FindPath(astar.NewPointToList(), p.astar_path, astar_source)
+    path := p.aStar.FindPath(astar.NewListToPoint(true), p.astar_path, astar_source)
 
-    var path_prev *astar.PathPoint = nil
-    for path != nil {
-        next := path.Parent
-        path.Parent = path_prev
-
-        path_prev = path
-        path = next
-    }
-
-    return NewPath(p.aStar, path_prev, p.row_off, p.col_off)
+    return NewPath(p.aStar, path, p.row_off, p.col_off)
 }
 
 func (p *Path) Move(currentf Locf, distance float64) (Locf, bool) {
