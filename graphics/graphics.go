@@ -1,6 +1,8 @@
 package graphics
 
 import (
+    "os"
+    "runtime"
     "time"
     "fmt"
 )
@@ -50,17 +52,18 @@ func NewGraphics(cfg GraphicsConfig, g *game.Game, perspective int) (*Graphics, 
         tm,
         cfg.SquareSize,
         nil,
+        g,
     )
     next_layer := gfx.layers["entity"]
 
     if perspective != -1 {
-        gfx.layers["entity"] = layer.NewBuildLayer(
+        gfx.layers["build"] = layer.NewBuildLayer(
             g.GetPlayer(perspective),
             tm,
             cfg.SquareSize,
             gfx.layers["entity"],
         )
-        next_layer = gfx.layers["entity"]
+        next_layer = gfx.layers["build"]
     }
 
     gfx.layers["stage"] = layer.NewStageLayer(
@@ -93,33 +96,33 @@ func NewGraphics(cfg GraphicsConfig, g *game.Game, perspective int) (*Graphics, 
     return gfx, nil
 }
 
-func (g *Graphics) setup() error {
+func (gfx *Graphics) setup() error {
     var errno = sdl.Init(sdl.INIT_EVERYTHING)
     if errno != 0 {
         return fmt.Errorf("Init failed: %s", sdl.GetError())
     }
 
-    g.display = sdl.SetVideoMode(int(g.cfg.ScreenX), int(g.cfg.ScreenY), 32, sdl.HWSURFACE | sdl.DOUBLEBUF | sdl.FULLSCREEN)
-    if g.display == nil {
+    gfx.display = sdl.SetVideoMode(int(gfx.cfg.ScreenX), int(gfx.cfg.ScreenY), 32, sdl.HWSURFACE | sdl.DOUBLEBUF | sdl.FULLSCREEN)
+    if gfx.display == nil {
         return fmt.Errorf("No surface created: %s", sdl.GetError())
     }
 
     return nil
 }
 
-func (g *Graphics) Cleanup() {
+func (gfx *Graphics) Cleanup() {
     sdl.Quit()
 }
 
-func (g *Graphics) Run() error {
+func (gfx *Graphics) Run() error {
     var err error
     var end_ch = make(chan interface{})
 
-    err = g.topLayer.Setup()
+    err = gfx.topLayer.Setup()
     if err != nil {
         return err
     }
-    defer g.topLayer.Cleanup()
+    defer gfx.topLayer.Cleanup()
 
     go func() {
         for {
@@ -128,14 +131,19 @@ func (g *Graphics) Run() error {
                 return
             case event, ok := <-sdl.Events:
                 if !ok {
-                    g.g.End()
+                    gfx.g.End()
+                    //TODO: fix this
+                    os.Exit(0)
                     continue
                 }
-                if event.(sdl.KeyboardEvent).Keysym.Sym == sdl.K_F1 {
-                    g.g.End()
+                kbe, ok := event.(sdl.KeyboardEvent)
+                if ok && kbe.Keysym.Sym == sdl.K_F1 {
+                    gfx.g.End()
+                    //TODO: fix this
+                    os.Exit(0)
                     continue
                 }
-                g.topLayer.HandleEvent(event)
+                gfx.topLayer.HandleEvent(event)
             }
         }
     }()
@@ -145,13 +153,16 @@ func (g *Graphics) Run() error {
 
     var last_time = time.Now().UnixNano()
 
-    for g.g.Running() {
+    gfx.g.Unlock()
+    for gfx.g.Running() {
         // Update State
-        g.topLayer.Update(time.Now().UnixNano() - last_time)
+        gfx.topLayer.Update(time.Now().UnixNano() - last_time)
         last_time = time.Now().UnixNano()
 
         // Update Screen
-        g.topLayer.Render(nil)
+        gfx.topLayer.Render(nil)
+        runtime.Gosched()
+        <-time.After(10 * time.Millisecond)
     }
 
     return nil

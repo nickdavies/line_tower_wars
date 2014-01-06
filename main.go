@@ -1,11 +1,15 @@
 package main
 
 import (
+    "os"
+    "fmt"
     "time"
     "math/rand"
 )
 
 import (
+    "github.com/nickdavies/line_tower_wars/game/unit"
+
     "github.com/nickdavies/line_tower_wars/game"
     "github.com/nickdavies/line_tower_wars/graphics"
 )
@@ -16,10 +20,11 @@ func main() {
     rand.Seed(seed)
 
     var players int = 2
-    var square_size uint16 = 128
-    var screen_x uint16 = 2560
-    var screen_y uint16 = 1600
-    var texture_dir string = "./gfx/textures"
+
+    go func() {
+        <-time.After(1 * time.Minute)
+        os.Exit(0)
+    }()
 
     gfx_config := graphics.GraphicsConfig{
         ScreenX: 2560,
@@ -40,16 +45,42 @@ func main() {
         },
     }
 
-    g := game.NewGame(game.GameConfig{}, players)
+    g, controls := game.NewGame(game.GameConfig{}, players)
 
-    gfx, err := graphics.NewGraphics(gfx_config, g, -1)
+    for i := 0; i < players; i++ {
+        go func (p_id int) {
+            for {
+                controls[p_id].Tick()
+            }
+        }(i)
+    }
+
+    gfx, err := graphics.NewGraphics(gfx_config, g, 0)
     if err != nil {
         panic(err)
     }
 
-    err = g.Run()
-    if err != nil {
-        panic(err)
-    }
+    g.Lock()
+    go func() {
+        err := gfx.Run()
+        if err != nil {
+            panic(err)
+        }
+    }()
+
+
+    go func () {
+        <-time.After(500 * time.Millisecond)
+        p := g.GetPlayer(0)
+        u := &unit.Unit{
+            Loc: p.Path.Startf(),
+            Speed: 5,
+        }
+        u.SetPath(p.Path)
+        p.SpawnUnit(u)
+    }()
+
+    winner := g.Run()
+    fmt.Println("Winner = ", winner)
 }
 

@@ -1,6 +1,8 @@
 package game
 
 import (
+    "runtime"
+    "fmt"
     "time"
     "sync"
 )
@@ -11,11 +13,13 @@ import (
 )
 
 type PlayerControls interface {
-    Tick() int64
+    Tick() (int64, bool)
 }
 
 type playerController struct {
     game *Game
+
+    my_player *player.Player
 }
 
 func (p *playerController) Tick() (int64, bool) {
@@ -29,6 +33,8 @@ func (p *playerController) Tick() (int64, bool) {
 }
 
 type Game struct {
+    sync.Mutex
+
     NumPlayers int
     running bool
     end bool
@@ -41,39 +47,42 @@ type Game struct {
     stage *stage.Stage
 }
 
-func NewGame(cfg GameConfig, NumPlayers int) *Game {
+func NewGame(cfg GameConfig, NumPlayers int) (*Game, []PlayerControls) {
     if NumPlayers != 2 {
         panic("Only two players are supported atm")
     }
 
-    s := stage.NewStage(NumPlayers)
-
-    var prev_player *player.Player
-
-    players := make([]*player.Player, NumPlayers)
-    for i := 0; i < NumPlayers; i++ {
-        players[i] = player.NewPlayer(s.GetPlayer(i))
-
-        if prev_player != nil {
-            prev_player.NextPlayer = players[i]
-        }
-        prev_player = players[i]
-    }
-    prev_player.NextPlayer = players[0]
-
     g := &Game{
         NumPlayers: NumPlayers,
         running: true,
-        deltaTime: 0,
-
-        players: players,
-        stage: s,
     }
+
+    g.stage = stage.NewStage(NumPlayers)
+
+    var prev_player *player.Player
+
+    g.players = make([]*player.Player, NumPlayers)
+    controls := make([]PlayerControls, NumPlayers)
+    for i := 0; i < NumPlayers; i++ {
+        g.players[i] = player.NewPlayer(g.stage.GetPlayer(i))
+        controls[i] = &playerController{
+            game: g,
+            my_player: g.players[i],
+        }
+
+        if prev_player != nil {
+            prev_player.NextPlayer = g.players[i]
+            g.players[i].PrevPlayer = prev_player
+        }
+        prev_player = g.players[i]
+    }
+    prev_player.NextPlayer = g.players[0]
+    g.players[0].PrevPlayer = g.players[NumPlayers - 1]
 
     g.resetBarrier.Add(NumPlayers + 1)
     g.tickBarrier.Add(NumPlayers + 1)
 
-    return g
+    return g, controls
 }
 
 func (g *Game) GetStage() *stage.Stage {
@@ -99,26 +108,24 @@ func (g *Game) Run() int {
     var update_barrier_1 sync.WaitGroup
     var update_barrier_2 sync.WaitGroup
 
-    update_barrier_1.Add(1)
-    update_barrier_2.Add(1)
+    update_barrier_1.Add(g.NumPlayers + 1)
+    update_barrier_2.Add(g.NumPlayers + 1)
 
     for i := 0; i < g.NumPlayers; i++ {
-        player := g.players[i]
-        go func() {
+        go func(p_id int) {
+            player := g.players[p_id]
             for g.running {
                 update_barrier_1.Done()
                 update_barrier_1.Wait()
 
-                if !g.running {
-                    return
-                }
+                fmt.Printf("player %d update tick\n", p_id)
 
                 player.Update(g.deltaTime)
 
                 update_barrier_2.Done()
                 update_barrier_2.Wait()
             }
-        }()
+        }(i)
     }
 
     for g.running {
@@ -146,6 +153,11 @@ func (g *Game) Run() int {
             }
         }
 
+        // let the player structs update
+        update_barrier_1.Done()
+        update_barrier_1.Wait()
+        update_barrier_1.Add(g.NumPlayers + 1)
+
         if living_players == 1 {
             winner = living
             g.running = false
@@ -155,12 +167,6 @@ func (g *Game) Run() int {
             winner = -1
             g.running = false
         }
-
-
-        // let the player structs update
-        update_barrier_1.Done()
-        update_barrier_1.Wait()
-        update_barrier_1.Add(g.NumPlayers + 1)
 
         // wait for player structs to finish updating
         update_barrier_2.Done()
@@ -172,6 +178,10 @@ func (g *Game) Run() int {
         g.tickBarrier.Done()
         g.tickBarrier.Wait()
         g.tickBarrier.Add(g.NumPlayers + 1)
+
+        runtime.Gosched()
+
+        fmt.Println("game tick")
     }
 
     return winner

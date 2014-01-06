@@ -1,5 +1,7 @@
 package layer
 
+import "fmt"
+
 import (
     "github.com/neagix/Go-SDL/sdl"
 )
@@ -33,6 +35,8 @@ func NewBuildLayer(player *player.Player, texture_map texture.TextureMap, square
 
         texture_map: texture_map,
         square_size: square_size,
+
+        player: player,
     }
 
     eg.voidOffsets = voidOffsets{&eg.layerBase}
@@ -46,7 +50,7 @@ func NewBuildLayer(player *player.Player, texture_map texture.TextureMap, square
 
 func (g *buildLayer) Setup() (err error) {
     // TODO: make tower size come in properly
-    g.buildSurface, err = util.CreateSurface(true, true, 1, 1)
+    g.buildSurface, err = util.CreateSurface(true, true, 1 * g.square_size, 1 * g.square_size)
     if err != nil {
         return err
     }
@@ -90,7 +94,6 @@ func (g *buildLayer) Update(deltaTime int64) {
 }
 
 func (g *buildLayer) Render(target *sdl.Surface) {
-
     x_off, y_off := g.GetXYOffsets()
     square_x, square_y := util.GetMouse(g.square_size, x_off, y_off, false)
 
@@ -120,7 +123,6 @@ func (g *buildLayer) Render(target *sdl.Surface) {
         nil,
     )
 
-
     target.Blit(
         &sdl.Rect{
             X: int16(square_x),
@@ -129,6 +131,7 @@ func (g *buildLayer) Render(target *sdl.Surface) {
         g.buildSurface,
         nil,
     )
+    fmt.Println("drew on ", square_x, square_y)
 
     if g.child != nil {
         g.child.Render(target)

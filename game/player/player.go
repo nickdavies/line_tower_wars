@@ -104,7 +104,8 @@ func (p *Player) Update(deltaTime int64) {
 }
 
 func (p *Player) SpawnUnit(u *unit.Unit) {
-
+    p.unitNum++
+    p.Units[p.unitNum] = u
 }
 
 func (p *Player) Buildable(row, col uint16) (bool) {

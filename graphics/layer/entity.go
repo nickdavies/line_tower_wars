@@ -5,6 +5,8 @@ import (
 )
 
 import (
+    "github.com/nickdavies/line_tower_wars/game"
+
     "github.com/nickdavies/line_tower_wars/graphics/texture"
 )
 
@@ -25,9 +27,9 @@ type entityLayer struct {
     texture_map texture.TextureMap
 }
 
-func NewEntityLayer(texture_map texture.TextureMap, square_size uint16, child Layer) Layer {
+func NewEntityLayer(texture_map texture.TextureMap, square_size uint16, child Layer, g *game.Game) Layer {
     eg := &entityLayer{
-        layerBase: layerBase{child: child},
+        layerBase: layerBase{child: child, game: g},
 
         texture_map: texture_map,
         square_size: square_size,
@@ -52,18 +54,36 @@ func (g *entityLayer) Update(deltaTime int64) {
 
 func (g *entityLayer) Render(target *sdl.Surface) {
 
-    /*
-    for loc, _ := range g.player.Towers {
-        target.Blit(
-            &sdl.Rect{
-                X: int16(loc.Col * g.square_size),
-                Y: int16(loc.Row * g.square_size),
-            },
-            g.texture_map.GetName("turret_basic").Surface,
-            nil,
-        )
+    turret_texture := g.texture_map.GetName("turret_basic").Surface
+    unit_texture := g.texture_map.GetName("unit_basic").Surface
+
+    for i := 0; i < g.game.NumPlayers; i++ {
+        player := g.game.GetPlayer(i)
+
+        for loc, _ := range player.Towers {
+            target.Blit(
+                &sdl.Rect{
+                    X: int16(loc.Col * g.square_size),
+                    Y: int16(loc.Row * g.square_size),
+                },
+                turret_texture,
+                nil,
+            )
+        }
+
+        for _, u := range player.Units {
+            loc := u.Loc
+            target.Blit(
+                &sdl.Rect{
+                    X: int16(loc.Col * float64(g.square_size)) - 32,
+                    Y: int16(loc.Row * float64(g.square_size)) - 32,
+                },
+                unit_texture,
+                nil,
+            )
+
+        }
     }
-    */
 
     if g.child != nil {
         g.child.Render(target)
