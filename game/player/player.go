@@ -15,6 +15,8 @@ var towerWeight = 10000
 
 type Player struct {
     NextPlayer *Player
+    PrevPlayer *Player
+
     myStage *stage.PlayerStage
 
     astar_source []astar.Point
@@ -30,6 +32,7 @@ type Player struct {
     unitNum int
 
     lives int
+    died bool
 }
 
 func NewPlayer(myStage *stage.PlayerStage) *Player {
@@ -63,14 +66,30 @@ func (p *Player) GetLives() int {
     return p.lives
 }
 
+func (p *Player) Die() {
+    if p.died {
+        return
+    }
+
+    for loc, _ := range p.Towers {
+        delete(p.Towers, loc)
+    }
+    p.Repath()
+
+    p.PrevPlayer.NextPlayer = p.NextPlayer
+    p.NextPlayer.PrevPlayer = p.PrevPlayer
+}
+
 func (p *Player) Update(deltaTime int64) {
     for u_id, u := range p.Units {
         u.Update(deltaTime)
 
         if u.AtEnd() {
             delete(p.Units, u_id)
-            p.lives--
-            p.NextPlayer.GainLife()
+            if p.lives > 0 {
+                p.lives--
+                p.PrevPlayer.GainLife()
+            }
         }
     }
 

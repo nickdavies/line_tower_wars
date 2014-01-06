@@ -71,8 +71,9 @@ func NewGame(cfg GameConfig, num_players int) *Game {
     return g
 }
 
-func (g *Game) Run() {
+func (g *Game) Run() int {
     var prevTime int64
+    var winner int
 
     var update_barrier_1 sync.WaitGroup
     var update_barrier_2 sync.WaitGroup
@@ -87,6 +88,10 @@ func (g *Game) Run() {
                 update_barrier_1.Done()
                 update_barrier_1.Wait()
 
+                if !g.running {
+                    return
+                }
+
                 player.Update(g.deltaTime)
 
                 update_barrier_2.Done()
@@ -95,7 +100,7 @@ func (g *Game) Run() {
         }()
     }
 
-    for {
+    for g.running {
         // release reset barrier and reset it
         // while people are waiting for tick barrier
         g.resetBarrier.Done()
@@ -108,12 +113,30 @@ func (g *Game) Run() {
         g.deltaTime = now - prevTime
         prevTime = now
 
+        // Check to see if anyone has won
+        living_players := 0
+        living := 0
+        for i := 0; i < g.num_players; i++ {
+            if g.players[i].GetLives() <= 0 {
+                g.players[i].Die()
+            } else {
+                living_players++
+                living = i
+            }
+        }
+
+        if living_players == 1 {
+            winner = living
+            g.running = false
+        }
+
+
         // let the player structs update
         update_barrier_1.Done()
         update_barrier_1.Wait()
         update_barrier_1.Add(g.num_players + 1)
 
-
+        // wait for player structs to finish updating
         update_barrier_2.Done()
         update_barrier_2.Wait()
         update_barrier_2.Add(g.num_players + 1)
@@ -124,5 +147,7 @@ func (g *Game) Run() {
         g.tickBarrier.Wait()
         g.tickBarrier.Add(g.num_players + 1)
     }
+
+    return winner
 }
 
