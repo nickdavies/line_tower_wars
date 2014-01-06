@@ -4,6 +4,10 @@ import (
     "github.com/neagix/Go-SDL/sdl"
 )
 
+import (
+    "github.com/nickdavies/line_tower_wars/game"
+)
+
 type Layer interface {
 
     Setup() error
@@ -18,14 +22,13 @@ type Layer interface {
     GetXYOffsets() (x uint16, y uint16)
 
     setParent(parent Layer)
-
-    Run() error
-    End()
 }
 
 type layerBase struct {
     child Layer
     parent Layer
+
+    game *game.Game
 }
 
 func (g *layerBase) setParent(parent Layer) {
@@ -51,15 +54,6 @@ func (g *voidSetup) Cleanup() {
     }
 }
 
-// Struct for doing nothing on run
-type voidRun struct {
-    *layerBase
-}
-
-func (g *voidRun) Run() error {
-    return nil
-}
-
 // Struct for passing events though
 type voidEvents struct {
     *layerBase
@@ -68,17 +62,6 @@ type voidEvents struct {
 func (g *voidEvents) HandleEvent(event interface{}) {
     if g.child != nil {
         g.child.HandleEvent(event)
-    }
-}
-
-// Struct for simply passing end command up
-type bubbleEnd struct {
-    *layerBase
-}
-
-func (g *bubbleEnd) End() {
-    if g.parent != nil {
-        g.parent.End()
     }
 }
 
