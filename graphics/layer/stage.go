@@ -9,26 +9,21 @@ import (
 )
 
 import (
-    "github.com/nickdavies/line_tower_wars/stage"
-    "github.com/nickdavies/line_tower_wars/terrain"
-    "github.com/nickdavies/line_tower_wars/texture"
-    "github.com/nickdavies/line_tower_wars/util"
+    "github.com/nickdavies/line_tower_wars/game/stage"
+    "github.com/nickdavies/line_tower_wars/game/terrain"
+
+    "github.com/nickdavies/line_tower_wars/graphics/texture"
+    "github.com/nickdavies/line_tower_wars/graphics/util"
 )
 
 type stageLayer struct {
     layerBase
-
-    // no run loop
-    voidRun
 
     // proxy events
     voidEvents
 
     // no offsets
     voidOffsets
-
-    // proxy ends
-    bubbleEnd
 
     size_x uint16
     size_y uint16
@@ -63,10 +58,8 @@ func NewStageLayer(s *stage.Stage, texture_map texture.TextureMap, square_size u
         },
     }
 
-    sg.voidRun = voidRun{&sg.layerBase}
     sg.voidEvents = voidEvents{&sg.layerBase}
     sg.voidOffsets = voidOffsets{&sg.layerBase}
-    sg.bubbleEnd = bubbleEnd{&sg.layerBase}
 
     if child != nil {
         child.setParent(sg)

@@ -94,7 +94,7 @@ func (p *Path) Move(currentf Locf, distance float64) (Locf, bool) {
 
     for {
         current_index := p.path_map[current]
-        if current_index == len(p.path) - 1{
+        if current_index == len(p.path) - 1 {
             return currentf, true
         }
         next := p.path[current_index + 1]
@@ -118,8 +118,20 @@ func (p *Path) Move(currentf Locf, distance float64) (Locf, bool) {
     }
 }
 
-func (p *Path) Start() Locf {
+func (p *Path) Start() Loc {
+    return p.path[0]
+}
+
+func (p *Path) End() Loc {
+    return p.path[len(p.path)-1]
+}
+
+func (p *Path) Startf() Locf {
     return p.path[0].ToFloat(0.5)
+}
+
+func (p *Path) Endf() Locf {
+    return p.path[len(p.path)-1].ToFloat(0.5)
 }
 
 func (p *Path) On(l Loc) bool {

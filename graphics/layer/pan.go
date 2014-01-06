@@ -10,20 +10,14 @@ import (
 )
 
 import (
-    "github.com/nickdavies/line_tower_wars/util"
+    "github.com/nickdavies/line_tower_wars/graphics/util"
 )
 
 type panLayer struct {
     layerBase
 
-    // no run loop
-    voidRun
-
     // proxy events
     voidEvents
-
-    // proxy ends
-    bubbleEnd
 
     pan_region_x uint16
     pan_region_y uint16
@@ -56,9 +50,7 @@ func NewPanLayer(pan_region_x, pan_region_y, starting_x, starting_y, pan_speed u
         view_y: starting_y,
     }
 
-    pg.voidRun = voidRun{&pg.layerBase}
     pg.voidEvents = voidEvents{&pg.layerBase}
-    pg.bubbleEnd = bubbleEnd{&pg.layerBase}
 
     child.setParent(pg)
 

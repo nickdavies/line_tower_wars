@@ -1,52 +1,43 @@
 package layer
 
-//import "fmt"
-
 import (
     "github.com/neagix/Go-SDL/sdl"
 )
 
 import (
-    "github.com/nickdavies/line_tower_wars/player"
-    "github.com/nickdavies/line_tower_wars/towers"
-    "github.com/nickdavies/line_tower_wars/texture"
-    "github.com/nickdavies/line_tower_wars/util"
+    "github.com/nickdavies/line_tower_wars/game/player"
+
+    "github.com/nickdavies/line_tower_wars/graphics/texture"
+    "github.com/nickdavies/line_tower_wars/graphics/util"
 )
 
-type entityLayer struct {
+type buildLayer struct {
     layerBase
-
-    // no run loop
-    voidRun
 
     // no offsets
     voidOffsets
 
-    // proxy ends
-    bubbleEnd
-
     square_size uint16
 
     buildable bool
-    player *player.Player
 
     texture_map texture.TextureMap
     buildSurface *sdl.Surface
+
+    player *player.Player
 }
 
-func NewEntityLayer(p *player.Player, texture_map texture.TextureMap, square_size uint16, child Layer) Layer {
-    eg := &entityLayer{
+func NewBuildLayer(player *player.Player, texture_map texture.TextureMap, square_size uint16, child Layer) Layer {
+    eg := &buildLayer{
         layerBase: layerBase{child: child},
 
         texture_map: texture_map,
         square_size: square_size,
 
-        player: p,
+        player: player,
     }
 
-    eg.voidRun = voidRun{&eg.layerBase}
     eg.voidOffsets = voidOffsets{&eg.layerBase}
-    eg.bubbleEnd = bubbleEnd{&eg.layerBase}
 
     if child != nil {
         child.setParent(eg)
@@ -55,8 +46,9 @@ func NewEntityLayer(p *player.Player, texture_map texture.TextureMap, square_siz
     return eg
 }
 
-func (g *entityLayer) Setup() (err error) {
-    g.buildSurface, err = util.CreateSurface(true, true, g.square_size * towers.SIZE_ROW, g.square_size * towers.SIZE_COL)
+func (g *buildLayer) Setup() (err error) {
+    // TODO: make tower size come in properly
+    g.buildSurface, err = util.CreateSurface(true, true, 1 * g.square_size, 1 * g.square_size)
     if err != nil {
         return err
     }
@@ -69,7 +61,7 @@ func (g *entityLayer) Setup() (err error) {
     return nil
 }
 
-func (g *entityLayer) Cleanup() {
+func (g *buildLayer) Cleanup() {
     g.buildSurface.Free()
 
     if g.child != nil {
@@ -77,7 +69,7 @@ func (g *entityLayer) Cleanup() {
     }
 }
 
-func (g *entityLayer) HandleEvent(event interface{}) {
+func (g *buildLayer) HandleEvent(event interface{}) {
     switch event.(type) {
     case sdl.MouseButtonEvent:
         e := event.(sdl.MouseButtonEvent)
@@ -93,17 +85,13 @@ func (g *entityLayer) HandleEvent(event interface{}) {
     }
 }
 
-func (g *entityLayer) Update(deltaTime int64) {
-
-    g.player.AntiCheat.Update(deltaTime)
-
+func (g *buildLayer) Update(deltaTime int64) {
     if g.child != nil {
         g.child.Update(deltaTime)
     }
 }
 
-func (g *entityLayer) Render(target *sdl.Surface) {
-
+func (g *buildLayer) Render(target *sdl.Surface) {
     x_off, y_off := g.GetXYOffsets()
     square_x, square_y := util.GetMouse(g.square_size, x_off, y_off, false)
 
@@ -112,29 +100,6 @@ func (g *entityLayer) Render(target *sdl.Surface) {
         build_colour = 0x00ff00
     } else {
         build_colour = 0xff0000
-    }
-
-    for loc, _ := range g.player.Towers {
-        target.Blit(
-            &sdl.Rect{
-                X: int16(loc.Col * g.square_size),
-                Y: int16(loc.Row * g.square_size),
-            },
-            g.texture_map.GetName("turret_basic").Surface,
-            nil,
-        )
-    }
-
-    if g.player.AntiCheat != nil {
-        target.FillRect(
-            &sdl.Rect{
-                X: int16(g.player.AntiCheat.Loc.Col * float64(g.square_size)) - 32,
-                Y: int16(g.player.AntiCheat.Loc.Row * float64(g.square_size)) - 32,
-                H: 64,
-                W: 64,
-            },
-            0x0000ff,
-        )
     }
 
     g.buildSurface.FillRect(
@@ -171,7 +136,7 @@ func (g *entityLayer) Render(target *sdl.Surface) {
 
 }
 
-func (g *entityLayer) GetSize() (uint16, uint16) {
+func (g *buildLayer) GetSize() (uint16, uint16) {
     return g.parent.GetSize()
 }
 

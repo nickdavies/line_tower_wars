@@ -6,7 +6,7 @@ import (
 )
 
 import (
-    "github.com/nickdavies/line_tower_wars/pathing"
+    "github.com/nickdavies/line_tower_wars/game/pathing"
 )
 
 type Unit struct {
@@ -42,11 +42,11 @@ func (u *Unit) Update(timeDelta int64) {
         }
     }
 
-    u.Loc, end = u.path.Move(u.Loc, float64(timeDelta) * u.Speed / float64(time.Second))
+    u.Loc, _ = u.path.Move(u.Loc, float64(timeDelta) * u.Speed / float64(time.Second))
+}
 
-    if end {
-        u.Loc = u.path.Start()
-    }
+func (u *Unit) AtEnd() bool {
+    return u.Loc.ToInt() == u.path.End()
 }
 
 func (u *Unit) SetPath(path *pathing.Path) {
