@@ -46,7 +46,7 @@ func NewPlayer(myStage *stage.PlayerStage) *Player {
         astar_target[i].Col = i
     }
 
-    return &Player{
+    p := &Player{
         myStage: myStage,
 
         astar_source: astar_source,
@@ -55,7 +55,13 @@ func NewPlayer(myStage *stage.PlayerStage) *Player {
         AStar: AStar,
         Towers: make(map[pathing.Loc]*towers.Tower),
         Units: make(map[int]*unit.Unit),
+
+        // TODO: make this a proper variable
+        lives: 50,
     }
+    p.Repath()
+
+    return p
 }
 
 func (p *Player) GainLife() {

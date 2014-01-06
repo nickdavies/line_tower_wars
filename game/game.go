@@ -2,7 +2,6 @@ package game
 
 import (
     "runtime"
-    "fmt"
     "time"
     "sync"
 )
@@ -118,9 +117,8 @@ func (g *Game) Run() int {
                 update_barrier_1.Done()
                 update_barrier_1.Wait()
 
-                fmt.Printf("player %d update tick\n", p_id)
-
                 player.Update(g.deltaTime)
+                runtime.Gosched()
 
                 update_barrier_2.Done()
                 update_barrier_2.Wait()
@@ -158,7 +156,7 @@ func (g *Game) Run() int {
         update_barrier_1.Wait()
         update_barrier_1.Add(g.NumPlayers + 1)
 
-        if living_players == 1 {
+        if living_players <= 1 {
             winner = living
             g.running = false
         }
@@ -180,8 +178,6 @@ func (g *Game) Run() int {
         g.tickBarrier.Add(g.NumPlayers + 1)
 
         runtime.Gosched()
-
-        fmt.Println("game tick")
     }
 
     return winner

@@ -94,7 +94,7 @@ func (p *Path) Move(currentf Locf, distance float64) (Locf, bool) {
 
     for {
         current_index := p.path_map[current]
-        if current_index == len(p.path) - 1{
+        if current_index == len(p.path) - 1 {
             return currentf, true
         }
         next := p.path[current_index + 1]

@@ -1,7 +1,5 @@
 package layer
 
-import "fmt"
-
 import (
     "github.com/neagix/Go-SDL/sdl"
 )
@@ -131,7 +129,6 @@ func (g *buildLayer) Render(target *sdl.Surface) {
         g.buildSurface,
         nil,
     )
-    fmt.Println("drew on ", square_x, square_y)
 
     if g.child != nil {
         g.child.Render(target)
