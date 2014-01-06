@@ -1,7 +1,7 @@
 package stage
 
 import (
-    "github.com/nickdavies/line_tower_wars/terrain"
+    "github.com/nickdavies/line_tower_wars/game/terrain"
 )
 
 const PlayerStageWidth = 21

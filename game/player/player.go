@@ -5,20 +5,16 @@ import (
 )
 
 import (
-    "github.com/nickdavies/line_tower_wars/stage"
-    "github.com/nickdavies/line_tower_wars/towers"
-    "github.com/nickdavies/line_tower_wars/unit"
-    "github.com/nickdavies/line_tower_wars/pathing"
+    "github.com/nickdavies/line_tower_wars/game/stage"
+    "github.com/nickdavies/line_tower_wars/game/towers"
+    "github.com/nickdavies/line_tower_wars/game/unit"
+    "github.com/nickdavies/line_tower_wars/game/pathing"
 )
 
 var towerWeight = 10000
 
-type loc struct {
-    Row uint16
-    Col uint16
-}
-
 type Player struct {
+    NextPlayer *Player
     myStage *stage.PlayerStage
 
     astar_source []astar.Point
@@ -27,9 +23,13 @@ type Player struct {
     Path *pathing.Path
 
     AStar astar.AStar
-    Towers map[loc]*towers.Tower
+    Towers map[pathing.Loc]*towers.Tower
 
-    AntiCheat *unit.Unit
+    // the units attacking you
+    Units map[int]*unit.Unit
+    unitNum int
+
+    lives int
 }
 
 func NewPlayer(myStage *stage.PlayerStage) *Player {
@@ -50,12 +50,46 @@ func NewPlayer(myStage *stage.PlayerStage) *Player {
         astar_target: astar_target,
 
         AStar: AStar,
-        Towers: make(map[loc]*towers.Tower),
+        Towers: make(map[pathing.Loc]*towers.Tower),
+        Units: make(map[int]*unit.Unit),
     }
 }
 
+func (p *Player) GainLife() {
+    p.lives++
+}
+
+func (p *Player) GetLives() int {
+    return p.lives
+}
+
+func (p *Player) Update(deltaTime int64) {
+    for u_id, u := range p.Units {
+        u.Update(deltaTime)
+
+        if u.AtEnd() {
+            delete(p.Units, u_id)
+            p.lives--
+            p.NextPlayer.GainLife()
+        }
+    }
+
+    for loc, t := range p.Towers {
+        t.Update(deltaTime)
+
+        // Kill tower on path
+        if p.Path.On(loc) {
+            delete(p.Towers, loc)
+        }
+    }
+}
+
+func (p *Player) SpawnUnit(u *unit.Unit) {
+
+}
+
 func (p *Player) Buildable(row, col uint16) (bool) {
-    _, ok := p.Towers[loc{row, col}]
+    _, ok := p.Towers[pathing.Loc{row, col}]
     if ok {
         return false
     }
@@ -69,7 +103,7 @@ func (p *Player) BuildTower(row, col uint16, no_repath bool) (user_message strin
     }
     row_off, col_off := p.myStage.FirstGrass()
 
-    p.Towers[loc{row, col}] = &towers.Tower{}
+    p.Towers[pathing.Loc{row, col}] = &towers.Tower{}
     p.AStar.FillTile(astar.Point{int(row - row_off + 1), int(col - col_off)}, towerWeight)
 
     if !no_repath {
@@ -85,9 +119,8 @@ func (p *Player) Repath() {
     path := p.AStar.FindPath(astar.NewRowToRow(), p.astar_source, p.astar_target)
     p.Path = pathing.NewPath(p.AStar, path, row_off - 1, col_off)
 
-    if p.AntiCheat != nil {
-        p.AntiCheat.SetPath(p.Path)
+    for _, u := range p.Units {
+        u.SetPath(p.Path)
     }
 }
-
 
