@@ -4,6 +4,7 @@ type MoneyConfig struct {
     Balance uint
     Income uint
     MinIncome uint
+    IncomeInterval int64
 }
 
 type StageConfig struct {

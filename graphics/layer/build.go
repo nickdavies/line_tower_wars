@@ -6,6 +6,8 @@ import (
 
 import (
     "github.com/nickdavies/line_tower_wars/game/player"
+    "github.com/nickdavies/line_tower_wars/game/tower"
+    "github.com/nickdavies/line_tower_wars/game/unit"
 
     "github.com/nickdavies/line_tower_wars/graphics/texture"
     "github.com/nickdavies/line_tower_wars/graphics/util"
@@ -75,7 +77,37 @@ func (g *buildLayer) HandleEvent(event interface{}) {
         e := event.(sdl.MouseButtonEvent)
         if e.Type == sdl.MOUSEBUTTONDOWN {
             x_off, y_off := g.GetXYOffsets()
-            g.player.BuildTower( (e.Y + y_off) / g.square_size, (e.X + x_off) / g.square_size, false)
+
+            base_tower := &tower.TowerType{
+                Id: 1,
+                Name: "basic_tower",
+
+                Range: 10,
+                FireRate: 2,
+                Damage: 10,
+
+                Health: 100,
+
+                Cost: 5,
+            }
+
+            g.player.BuildTower(base_tower, (e.Y + y_off) / g.square_size, (e.X + x_off) / g.square_size, false)
+        }
+    case sdl.KeyboardEvent:
+        e := event.(sdl.KeyboardEvent)
+        if e.Type == sdl.KEYDOWN && e.Keysym.Sym == sdl.K_RETURN {
+            base_unit := &unit.UnitType{
+                Id: 1,
+                Name: "basic_mob",
+
+                Speed: 2,
+                IncomeDelta: 1,
+
+                Health: 5,
+                Cost: 5,
+            }
+
+            g.player.BuyUnit(base_unit, true)
         }
     default:
     }

@@ -2,23 +2,25 @@ package game
 
 import (
     "runtime"
-    "time"
     "sync"
 )
 
 import (
     "github.com/nickdavies/line_tower_wars/game/stage"
     "github.com/nickdavies/line_tower_wars/game/player"
+    "github.com/nickdavies/line_tower_wars/game/money"
 )
 
 type PlayerControls interface {
     Tick() (int64, bool)
+
+    GetGame() *Game
+    GetPlayer() *player.Player
 }
 
 type playerController struct {
     game *Game
-
-    my_player *player.Player
+    player *player.Player
 }
 
 func (p *playerController) Tick() (int64, bool) {
@@ -29,6 +31,14 @@ func (p *playerController) Tick() (int64, bool) {
     p.game.tickBarrier.Wait()
 
     return p.game.deltaTime, p.game.running
+}
+
+func (p *playerController) GetGame() *Game {
+    return p.game
+}
+
+func (p *playerController) GetPlayer() *player.Player {
+    return p.player
 }
 
 type Game struct {
@@ -63,10 +73,13 @@ func NewGame(cfg GameConfig, NumPlayers int) (*Game, []PlayerControls) {
     g.players = make([]*player.Player, NumPlayers)
     controls := make([]PlayerControls, NumPlayers)
     for i := 0; i < NumPlayers; i++ {
-        g.players[i] = player.NewPlayer(g.stage.GetPlayer(i))
+        m_cfg := cfg.MoneyConfig
+        m := money.NewPlayerBalance(m_cfg.Balance, m_cfg.Income, m_cfg.MinIncome, m_cfg.IncomeInterval)
+
+        g.players[i] = player.NewPlayer(g.stage.GetPlayer(i), m)
         controls[i] = &playerController{
             game: g,
-            my_player: g.players[i],
+            player: g.players[i],
         }
 
         if prev_player != nil {
@@ -100,8 +113,7 @@ func (g *Game) End() {
     g.end = true
 }
 
-func (g *Game) Run() int {
-    var prevTime int64
+func (g *Game) Run(tick_ch chan int64) int {
     var winner int
 
     var update_barrier_1 sync.WaitGroup
@@ -126,7 +138,7 @@ func (g *Game) Run() int {
         }(i)
     }
 
-    for g.running {
+    for delta := range tick_ch {
         // release reset barrier and reset it
         // while people are waiting for tick barrier
         g.resetBarrier.Done()
@@ -134,10 +146,7 @@ func (g *Game) Run() int {
         g.resetBarrier.Add(g.NumPlayers + 1)
 
         // Everyone else is now waiting for the tick barrier
-
-        now := time.Now().UnixNano()
-        g.deltaTime = now - prevTime
-        prevTime = now
+        g.deltaTime = delta
 
         // Check to see if anyone has won
         living_players := 0
@@ -177,7 +186,7 @@ func (g *Game) Run() int {
         g.tickBarrier.Wait()
         g.tickBarrier.Add(g.NumPlayers + 1)
 
-        runtime.Gosched()
+        <-tick_ch
     }
 
     return winner

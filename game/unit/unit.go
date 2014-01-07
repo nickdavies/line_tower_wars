@@ -9,16 +9,37 @@ import (
     "github.com/nickdavies/line_tower_wars/game/pathing"
 )
 
+type UnitType struct {
+    Id int
+    Name string
+
+    Speed float64
+    IncomeDelta int
+
+    Health uint
+
+    Cost uint
+}
+
 type Unit struct {
     sync.Mutex
 
+    Type *UnitType
+
     Loc pathing.Locf
 
-    Speed float64
-
     path *pathing.Path
-
     return_path *pathing.Path
+}
+
+func NewUnit(t *UnitType, path *pathing.Path) *Unit {
+    u := &Unit{
+        Type: t,
+        Loc: path.Startf(),
+    }
+    u.SetPath(path)
+
+    return u
 }
 
 func (u *Unit) Update(timeDelta int64) {
@@ -34,7 +55,7 @@ func (u *Unit) Update(timeDelta int64) {
         if u.path.On(u.Loc.ToInt()) {
             u.return_path = nil
         } else {
-            u.Loc, end = u.return_path.Move(u.Loc, float64(timeDelta) * u.Speed / float64(time.Second))
+            u.Loc, end = u.return_path.Move(u.Loc, float64(timeDelta) * u.Type.Speed / float64(time.Second))
             if end {
                 u.return_path = nil
             }
@@ -42,7 +63,7 @@ func (u *Unit) Update(timeDelta int64) {
         }
     }
 
-    u.Loc, _ = u.path.Move(u.Loc, float64(timeDelta) * u.Speed / float64(time.Second))
+    u.Loc, _ = u.path.Move(u.Loc, float64(timeDelta) * u.Type.Speed / float64(time.Second))
 }
 
 func (u *Unit) AtEnd() bool {

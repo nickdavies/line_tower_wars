@@ -1,12 +1,18 @@
 package player
 
 import (
+//    "fmt"
+    "time"
+)
+
+import (
     "github.com/nickdavies/go-astar/astar"
 )
 
 import (
     "github.com/nickdavies/line_tower_wars/game/stage"
-    "github.com/nickdavies/line_tower_wars/game/towers"
+    "github.com/nickdavies/line_tower_wars/game/money"
+    "github.com/nickdavies/line_tower_wars/game/tower"
     "github.com/nickdavies/line_tower_wars/game/unit"
     "github.com/nickdavies/line_tower_wars/game/pathing"
 )
@@ -23,9 +29,10 @@ type Player struct {
     astar_target []astar.Point
 
     Path *pathing.Path
+    Money money.PlayerBalance
 
     AStar astar.AStar
-    Towers map[pathing.Loc]*towers.Tower
+    Towers map[pathing.Loc]*tower.Tower
 
     // the units attacking you
     Units map[int]*unit.Unit
@@ -33,9 +40,11 @@ type Player struct {
 
     lives int
     died bool
+
+    moneyTimer int64
 }
 
-func NewPlayer(myStage *stage.PlayerStage) *Player {
+func NewPlayer(myStage *stage.PlayerStage, balance money.PlayerBalance) *Player {
 
     AStar := astar.NewAStar(stage.Grass_Rows + 2, stage.Grass_Cols)
 
@@ -53,11 +62,13 @@ func NewPlayer(myStage *stage.PlayerStage) *Player {
         astar_target: astar_target,
 
         AStar: AStar,
-        Towers: make(map[pathing.Loc]*towers.Tower),
+        Towers: make(map[pathing.Loc]*tower.Tower),
         Units: make(map[int]*unit.Unit),
 
         // TODO: make this a proper variable
         lives: 50,
+
+        Money: balance,
     }
     p.Repath()
 
@@ -87,6 +98,14 @@ func (p *Player) Die() {
 }
 
 func (p *Player) Update(deltaTime int64) {
+    //fmt.Println(p.moneyTimer / int64(time.Millisecond), deltaTime, p.moneyTimer / int64(time.Second))
+    p.moneyTimer += deltaTime
+
+    if p.moneyTimer / int64(time.Second) > p.Money.IncomeInterval() {
+        p.Money.PayIncome()
+        p.moneyTimer = 0
+    }
+
     for u_id, u := range p.Units {
         u.Update(deltaTime)
 
@@ -109,6 +128,23 @@ func (p *Player) Update(deltaTime int64) {
     }
 }
 
+func (p *Player) BuyUnit(t *unit.UnitType, no_spawn bool) bool {
+    ok := p.Money.Spend(t.Cost)
+    if ok {
+        if !no_spawn {
+            p.NextPlayer.SpawnUnit(unit.NewUnit(t, p.NextPlayer.Path))
+        }
+        if t.IncomeDelta > 0 {
+            p.Money.IncreaseIncome(uint(t.IncomeDelta))
+        } else if t.IncomeDelta < 0 {
+            p.Money.DecreaseIncome(uint(-1 * t.IncomeDelta))
+        }
+
+        return true
+    }
+    return false
+}
+
 func (p *Player) SpawnUnit(u *unit.Unit) {
     p.unitNum++
     p.Units[p.unitNum] = u
@@ -123,13 +159,21 @@ func (p *Player) Buildable(row, col uint16) (bool) {
     return p.myStage.Buildable(row, col)
 }
 
-func (p *Player) BuildTower(row, col uint16, no_repath bool) (user_message string) {
+func (p *Player) BuildTower(t *tower.TowerType, row, col uint16, no_repath bool) (user_message string) {
     if !p.Buildable(row, col) {
         return "not buildable"
     }
+
+    ok := p.Money.Spend(t.Cost)
+    if !ok {
+        return "no money"
+    }
+
     row_off, col_off := p.myStage.FirstGrass()
 
-    p.Towers[pathing.Loc{row, col}] = &towers.Tower{}
+    p.Towers[pathing.Loc{row, col}] = &tower.Tower{
+        Type: t,
+    }
     p.AStar.FillTile(astar.Point{int(row - row_off + 1), int(col - col_off)}, towerWeight)
 
     if !no_repath {

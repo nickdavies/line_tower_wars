@@ -2,8 +2,6 @@ package graphics
 
 import (
     "os"
-    "runtime"
-    "time"
     "fmt"
 )
 
@@ -84,11 +82,17 @@ func NewGraphics(cfg GraphicsConfig, g *game.Game, perspective int) (*Graphics, 
 
         gfx.layers["stage"],
     )
+
+    gfx.layers["gui"] = layer.NewGuiLayer(
+        g,
+        gfx.layers["pan"],
+    )
+
     gfx.layers["main"] = layer.NewSdlLayer(
         gfx.display,
         cfg.ScreenX,
         cfg.ScreenY,
-        gfx.layers["pan"],
+        gfx.layers["gui"],
     )
 
     gfx.topLayer = gfx.layers["main"]
@@ -114,7 +118,7 @@ func (gfx *Graphics) Cleanup() {
     sdl.Quit()
 }
 
-func (gfx *Graphics) Run() error {
+func (gfx *Graphics) Run(tick_ch chan int64) error {
     var err error
     var end_ch = make(chan interface{})
 
@@ -151,18 +155,15 @@ func (gfx *Graphics) Run() error {
         end_ch <-nil
     }()
 
-    var last_time = time.Now().UnixNano()
-
     gfx.g.Unlock()
-    for gfx.g.Running() {
+    for delta := range tick_ch {
         // Update State
-        gfx.topLayer.Update(time.Now().UnixNano() - last_time)
-        last_time = time.Now().UnixNano()
+        gfx.topLayer.Update(delta)
 
         // Update Screen
         gfx.topLayer.Render(nil)
-        runtime.Gosched()
-        <-time.After(10 * time.Millisecond)
+
+        <-tick_ch
     }
 
     return nil

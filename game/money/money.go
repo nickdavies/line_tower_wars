@@ -14,13 +14,16 @@ type PlayerBalance interface {
     DecreaseIncome(amount uint)
 
     PayIncome()
+
+    IncomeInterval() int64
 }
 
-func NewPlayerBalance(balance, income, min_income uint) PlayerBalance {
+func NewPlayerBalance(balance, income, min_income uint, income_interval int64) PlayerBalance {
     return &playerBalanceStruct{
         balance: balance,
         income: income,
         min_income: min_income,
+        income_interval: income_interval,
     }
 }
 
@@ -29,6 +32,7 @@ type playerBalanceStruct struct {
     balance uint
     income uint
     min_income uint
+    income_interval int64
 }
 
 func (b *playerBalanceStruct) Get() uint {
@@ -49,7 +53,7 @@ func (b *playerBalanceStruct) Spend(amount uint) bool {
     b.Lock()
     defer b.Unlock()
 
-    if b.balance > amount {
+    if b.balance >= amount {
         b.balance -= amount
         return true
     }
@@ -84,5 +88,9 @@ func (b *playerBalanceStruct) PayIncome() {
     defer b.Unlock()
 
     b.balance += b.income
+}
+
+func (b *playerBalanceStruct) IncomeInterval() int64 {
+    return b.income_interval
 }
 

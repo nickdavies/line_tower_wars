@@ -8,8 +8,6 @@ import (
 )
 
 import (
-    "github.com/nickdavies/line_tower_wars/game/unit"
-
     "github.com/nickdavies/line_tower_wars/game"
     "github.com/nickdavies/line_tower_wars/graphics"
 )
@@ -26,9 +24,18 @@ func main() {
         os.Exit(0)
     }()
 
+    game_cfg := game.GameConfig{
+        MoneyConfig: game.MoneyConfig{
+            Balance: 120,
+            Income: 5,
+            MinIncome: 1,
+            IncomeInterval: 5,
+        },
+    }
+
     gfx_config := graphics.GraphicsConfig{
-        ScreenX: 2560,
-        ScreenY: 1600,
+        ScreenX: 1920,
+        ScreenY: 1080,
 
         SquareSize: 128,
 
@@ -45,7 +52,7 @@ func main() {
         },
     }
 
-    g, controls := game.NewGame(game.GameConfig{}, players)
+    g, controls := game.NewGame(game_cfg, players)
 
     for i := 0; i < players; i++ {
         go func (p_id int) {
@@ -60,27 +67,43 @@ func main() {
         panic(err)
     }
 
+    var gfx_tick = make(chan int64)
+    var game_tick = make(chan int64)
+
     g.Lock()
     go func() {
-        err := gfx.Run()
+        err := gfx.Run(gfx_tick)
         if err != nil {
             panic(err)
         }
     }()
 
-
-    go func () {
-        <-time.After(500 * time.Millisecond)
-        p := g.GetPlayer(0)
-        u := &unit.Unit{
-            Loc: p.Path.Startf(),
-            Speed: 5,
-        }
-        u.SetPath(p.Path)
-        p.SpawnUnit(u)
+    go func() {
+        winner := g.Run(game_tick)
+        fmt.Println("Winner = ", winner)
     }()
 
-    winner := g.Run()
-    fmt.Println("Winner = ", winner)
+    var gfx_last int64 = time.Now().UnixNano()
+    var game_last int64 = time.Now().UnixNano()
+
+    var tick_count int64
+    var tick_start int64
+    _ = tick_start
+    for {
+        now := time.Now().UnixNano()
+        tick_start = now
+
+        game_tick<-(now - game_last)
+        game_tick<-0
+        game_last = now
+
+        now = time.Now().UnixNano()
+        gfx_tick<-(now - gfx_last)
+        gfx_tick<-0
+        gfx_last = now
+
+        //fmt.Println("tick", tick_count, (time.Now().UnixNano() - tick_start) / int64(time.Millisecond))
+        tick_count++
+    }
 }
 
