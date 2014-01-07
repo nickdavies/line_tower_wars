@@ -82,6 +82,30 @@ func (g *entityLayer) Render(target *sdl.Surface) {
                 nil,
             )
 
+            health := 64 * (float64(u.Health) / float64(u.Type.Health))
+
+            target.FillRect(
+                &sdl.Rect{
+                    X: int16(loc.Col * float64(g.square_size)) - 32,
+                    Y: int16(loc.Row * float64(g.square_size)) - 32,
+                    W: 5,
+                    H: 64,
+                },
+                0x000000,
+            )
+
+            if health > 0 {
+                target.FillRect(
+                    &sdl.Rect{
+                        X: int16(loc.Col * float64(g.square_size)) - 32,
+                        Y: int16(loc.Row * float64(g.square_size)) - 32,
+                        W: 5,
+                        H: uint16(health),
+                    },
+                    0x00ff00,
+                )
+            }
+
         }
     }
 

@@ -28,6 +28,8 @@ type Unit struct {
 
     Loc pathing.Locf
 
+    Health int
+
     path *pathing.Path
     return_path *pathing.Path
 }
@@ -36,6 +38,7 @@ func NewUnit(t *UnitType, path *pathing.Path) *Unit {
     u := &Unit{
         Type: t,
         Loc: path.Startf(),
+        Health: int(t.Health),
     }
     u.SetPath(path)
 

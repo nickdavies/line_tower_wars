@@ -1,13 +1,15 @@
 package main
 
 import (
-    "os"
+//    "os"
     "fmt"
     "time"
     "math/rand"
 )
 
 import (
+    "github.com/nickdavies/line_tower_wars/game/unit"
+
     "github.com/nickdavies/line_tower_wars/game"
     "github.com/nickdavies/line_tower_wars/graphics"
 )
@@ -19,10 +21,12 @@ func main() {
 
     var players int = 2
 
+    /*
     go func() {
         <-time.After(1 * time.Minute)
         os.Exit(0)
     }()
+    */
 
     game_cfg := game.GameConfig{
         MoneyConfig: game.MoneyConfig{
@@ -54,13 +58,48 @@ func main() {
 
     g, controls := game.NewGame(game_cfg, players)
 
-    for i := 0; i < players; i++ {
-        go func (p_id int) {
-            for {
-                controls[p_id].Tick()
+    // TODO: make graphics use this
+    go func () {
+        for {
+            controls[0].Tick()
+        }
+    }()
+
+    go func () {
+        gap := 0
+        min_gap := 10
+
+        player := controls[1].GetPlayer()
+        base_unit := &unit.UnitType{
+            Id: 1,
+            Name: "basic_mob",
+
+            Speed: 1,
+            IncomeDelta: 1,
+
+            Health: 25,
+            Cost: 5,
+        }
+
+        var start int64 = -1
+        for {
+            controls[1].Tick()
+
+            if start == -1 {
+                start = time.Now().UnixNano()
             }
-        }(i)
-    }
+
+            if time.Now().UnixNano() - start < int64(time.Second * 5) {
+                continue
+            }
+            gap += 1
+
+            if gap >= min_gap && player.Money.Get() > base_unit.Cost {
+                player.BuyUnit(base_unit, false)
+                gap = 0
+            }
+        }
+    }()
 
     gfx, err := graphics.NewGraphics(gfx_config, g, 0)
     if err != nil {

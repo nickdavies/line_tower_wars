@@ -83,7 +83,7 @@ func (g *buildLayer) HandleEvent(event interface{}) {
                 Name: "basic_tower",
 
                 Range: 10,
-                FireRate: 2,
+                FireRate: 1,
                 Damage: 10,
 
                 Health: 100,

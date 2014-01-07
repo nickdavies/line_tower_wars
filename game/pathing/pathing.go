@@ -32,6 +32,10 @@ func (l Locf) ToInt() Loc {
     }
 }
 
+func (l Locf) Dist(other Locf) float64 {
+    return math.Sqrt(math.Pow(l.Row - other.Row, 2) + math.Pow(l.Row - other.Row, 2))
+}
+
 type Path struct {
     aStar astar.AStar
     root *astar.PathPoint

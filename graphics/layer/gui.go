@@ -46,7 +46,8 @@ func (g *guiLayer) Setup() (err error) {
         return fmt.Errorf("ttf.Init failed: %s", sdl.GetError())
     }
 
-    g.font = ttf.OpenFont("/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf", 12)
+    // TODO: fix this
+    g.font = ttf.OpenFont("./gfx/DejaVuSansMono.ttf", 12)
     if g.font == nil {
         return fmt.Errorf("OpenFont failed: %s", sdl.GetError())
     }

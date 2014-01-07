@@ -1,7 +1,6 @@
 package player
 
 import (
-//    "fmt"
     "time"
 )
 
@@ -107,6 +106,11 @@ func (p *Player) Update(deltaTime int64) {
     }
 
     for u_id, u := range p.Units {
+        if u.Health <= 0 {
+            delete(p.Units, u_id)
+            continue
+        }
+
         u.Update(deltaTime)
 
         if u.AtEnd() {
@@ -119,7 +123,7 @@ func (p *Player) Update(deltaTime int64) {
     }
 
     for loc, t := range p.Towers {
-        t.Update(deltaTime)
+        t.Update(deltaTime, p.Units)
 
         // Kill tower on path
         if p.Path.On(loc) {
