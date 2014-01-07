@@ -127,6 +127,9 @@ func (p *Player) Update(deltaTime int64) {
 
         // Kill tower on path
         if p.Path.On(loc) {
+            row_off, col_off := p.myStage.FirstGrass()
+            p.AStar.ClearTile(astar.Point{int(loc.Row - row_off + 1), int(loc.Col - col_off)})
+
             delete(p.Towers, loc)
         }
     }
