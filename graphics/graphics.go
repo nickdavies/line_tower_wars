@@ -141,7 +141,7 @@ func (gfx *Graphics) Run(tick_ch chan int64) error {
                     continue
                 }
                 kbe, ok := event.(sdl.KeyboardEvent)
-                if ok && kbe.Keysym.Sym == sdl.K_F1 {
+                if ok && kbe.Keysym.Sym == sdl.K_ESCAPE {
                     gfx.g.End()
                     //TODO: fix this
                     os.Exit(0)
