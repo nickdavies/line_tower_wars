@@ -44,10 +44,12 @@ func (t *Tower) Update(deltaTime int64, units map[int]*unit.Unit) {
         locf := t.Loc.ToFloat(0.5)
 
         for _, u := range units {
-            dist := locf.Dist(u.Loc)
-            if dist < t.Type.Range {
-                if best_u == nil || u.Loc.Row > best_u.Loc.Row {
-                    best_u = u
+            if u.Health > 0 {
+                dist := locf.Dist(u.Loc)
+                if dist < t.Type.Range {
+                    if best_u == nil || u.Loc.Row > best_u.Loc.Row {
+                        best_u = u
+                    }
                 }
             }
         }
