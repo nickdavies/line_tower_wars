@@ -107,6 +107,7 @@ func (p *Player) Update(deltaTime int64) {
 
     for u_id, u := range p.Units {
         if u.Health <= 0 {
+            p.Money.Add(u.Type.Cost / 2)
             delete(p.Units, u_id)
             continue
         }

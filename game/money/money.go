@@ -8,6 +8,7 @@ type PlayerBalance interface {
     Get() uint
     GetIncome() uint
 
+    Add(amount uint)
     Spend(amount uint) bool
 
     IncreaseIncome(amount uint)
@@ -47,6 +48,13 @@ func (b *playerBalanceStruct) GetIncome() uint {
     defer b.Unlock()
 
     return b.income
+}
+
+func (b *playerBalanceStruct) Add(amount uint) {
+    b.Lock()
+    defer b.Unlock()
+
+    b.balance += amount
 }
 
 func (b *playerBalanceStruct) Spend(amount uint) bool {
