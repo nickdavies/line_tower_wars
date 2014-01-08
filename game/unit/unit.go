@@ -34,10 +34,17 @@ type Unit struct {
     return_path *pathing.Path
 }
 
-func NewUnit(t *UnitType, path *pathing.Path) *Unit {
+func NewUnit(t *UnitType, path *pathing.Path, start_p *pathing.Locf) *Unit {
+    var start pathing.Locf
+    if start_p == nil {
+        start = path.Startf()
+    } else {
+        start = *start_p
+    }
+
     u := &Unit{
         Type: t,
-        Loc: path.Startf(),
+        Loc: start,
         Health: int(t.Health),
     }
     u.SetPath(path)

@@ -1,6 +1,7 @@
 package player
 
 import (
+    "math/rand"
     "time"
 )
 
@@ -44,13 +45,12 @@ type Player struct {
 }
 
 func NewPlayer(myStage *stage.PlayerStage, balance money.PlayerBalance) *Player {
+    AStar := astar.NewAStar(stage.Spawn_Size + stage.Grass_Rows + 1, stage.Grass_Cols)
 
-    AStar := astar.NewAStar(stage.Grass_Rows + 2, stage.Grass_Cols)
-
-    astar_source := []astar.Point{astar.Point{Row: 0, Col: stage.Grass_Cols / 2}}
+    astar_source := []astar.Point{astar.Point{Row: stage.Spawn_Size - 1, Col: stage.Grass_Cols / 2}}
     astar_target := make([]astar.Point, stage.Grass_Cols)
     for i := 0; i < stage.Grass_Cols; i++ {
-        astar_target[i].Row = stage.Grass_Rows + 1
+        astar_target[i].Row = stage.Spawn_Size + stage.Grass_Rows + 1
         astar_target[i].Col = i
     }
 
@@ -127,9 +127,8 @@ func (p *Player) Update(deltaTime int64) {
 
         // Kill tower on path
         if p.Path.On(loc) {
-            row_off, col_off := p.myStage.FirstGrass()
-            p.AStar.ClearTile(astar.Point{int(loc.Row - row_off + 1), int(loc.Col - col_off)})
-
+            row_off, col_off := p.myStage.TopLeft()
+            p.AStar.ClearTile(astar.Point{int(loc.Row - row_off), int(loc.Col - col_off)})
             delete(p.Towers, loc)
         }
     }
@@ -139,7 +138,7 @@ func (p *Player) BuyUnit(t *unit.UnitType, no_spawn bool) bool {
     ok := p.Money.Spend(t.Cost)
     if ok {
         if !no_spawn {
-            p.NextPlayer.SpawnUnit(unit.NewUnit(t, p.NextPlayer.Path))
+            p.NextPlayer.SpawnUnit(t)
         }
         if t.IncomeDelta > 0 {
             p.Money.IncreaseIncome(uint(t.IncomeDelta))
@@ -152,7 +151,14 @@ func (p *Player) BuyUnit(t *unit.UnitType, no_spawn bool) bool {
     return false
 }
 
-func (p *Player) SpawnUnit(u *unit.Unit) {
+func (p *Player) SpawnUnit(t *unit.UnitType) {
+    row_off, col_off := p.myStage.TopLeft()
+    start := pathing.Locf{
+        Row: float64(row_off) + float64(rand.Intn(stage.Spawn_Size)) + 0.5,
+        Col: float64(col_off) + float64(rand.Intn(stage.Grass_Cols)) + 0.5,
+    }
+    u := unit.NewUnit(t, p.Path, &start)
+
     p.unitNum++
     p.Units[p.unitNum] = u
 }
@@ -176,12 +182,12 @@ func (p *Player) BuildTower(t *tower.TowerType, row, col uint16, no_repath bool)
         return "no money"
     }
 
-    row_off, col_off := p.myStage.FirstGrass()
-
     p.Towers[pathing.Loc{row, col}] = &tower.Tower{
         Type: t,
     }
-    p.AStar.FillTile(astar.Point{int(row - row_off + 1), int(col - col_off)}, towerWeight)
+
+    row_off, col_off := p.myStage.TopLeft()
+    p.AStar.FillTile(astar.Point{int(row - row_off), int(col - col_off)}, towerWeight)
 
     if !no_repath {
         p.Repath()
@@ -191,10 +197,10 @@ func (p *Player) BuildTower(t *tower.TowerType, row, col uint16, no_repath bool)
 }
 
 func (p *Player) Repath() {
-    row_off, col_off := p.myStage.FirstGrass()
+    row_off, col_off := p.myStage.TopLeft()
 
     path := p.AStar.FindPath(astar.NewRowToRow(), p.astar_source, p.astar_target)
-    p.Path = pathing.NewPath(p.AStar, path, row_off - 1, col_off)
+    p.Path = pathing.NewPath(p.AStar, path, row_off, col_off)
 
     for _, u := range p.Units {
         u.SetPath(p.Path)

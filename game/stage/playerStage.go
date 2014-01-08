@@ -32,12 +32,12 @@ func NewPlayerStage(player_num int, tiles [][]terrain.Terrain, s *Stage) *Player
     return player
 }
 
-func (ps *PlayerStage) FirstGrass() (row, col uint16) {
-    return Wall_Top + Spawn_Size, ps.start + Wall_Side + Shadow_Side
+func (ps *PlayerStage) TopLeft() (row, col uint16) {
+    return Wall_Top, ps.start + Wall_Side + Shadow_Side
 }
 
-func (ps *PlayerStage) LastGrass() (row, col uint16) {
-    return PlayerStageHeight - Wall_Bottom - Goal_Size, ps.end
+func (ps *PlayerStage) BottomRight() (row, col uint16) {
+    return PlayerStageHeight - Wall_Bottom, ps.end
 }
 
 func (ps *PlayerStage) Buildable(row, col uint16) bool {
