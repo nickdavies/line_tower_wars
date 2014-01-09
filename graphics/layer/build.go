@@ -103,11 +103,11 @@ func (g *buildLayer) HandleEvent(event interface{}) {
                 Speed: 2,
                 IncomeDelta: 1,
 
-                Health: 5,
+                Health: 50,
                 Cost: 5,
             }
 
-            g.player.BuyUnit(base_unit, true)
+            g.player.BuyUnit(base_unit, false)
         }
     default:
     }

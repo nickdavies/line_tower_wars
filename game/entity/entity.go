@@ -13,56 +13,70 @@ import (
     "github.com/nickdavies/line_tower_wars/game/tower"
 )
 
-var NoSuchEntityErr = error
+var NoSuchEntityErr = errors.New("No such entity exists")
 
-type UnitFactory struct {
-    items map[string]unit.UnitType
+type EntityFactory interface {
+    GetTower(name string) (tower.TowerType, error)
+    GetUnit(name string) (unit.UnitType, error)
+
+    ListTowers() ([]string)
+    ListUnits() ([]string)
+}
+type entityFactoryStruct struct {
+    Unit map[string]*unit.UnitType
+    Tower map[string]*tower.TowerType
 }
 
-func NewUnitFactory (cfgFile string) (*UnitFactory, error) {
-    uf := &UnitFactory{
-        items: make(map[string]unit.UnitType)
+func NewEntityFactory (cfgFile string) (EntityFactory, error) {
+    ef := &entityFactoryStruct{
+        Unit: make(map[string]*unit.UnitType),
+        Tower: make(map[string]*tower.TowerType),
     }
 
-    err := gcfg.ReadFileInto(uf, cfgFile)
+    err := gcfg.ReadFileInto(ef, cfgFile)
     if err != nil {
         return nil, err
     }
 
-    return uf, nil
+    return ef, nil
 }
 
-func (uf *UnitFactory) Get(name string) (unit.UnitType, error) {
-
-    u, ok := uf.items[name]
-    if !ok {
-        return unit.UnitType{}, NoSuchEntityErr
-    }
-    return u, nil
-}
-
-type TowerFactory struct {
-    items map[string]tower.TowerType
-}
-
-func NewTowerFactory (cfgFile string) (*TowerFactory, error) {
-    uf := &TowerFactory{
-        items: make(map[string]tower.TowerType)
-    }
-
-    err := gcfg.ReadFileInto(uf, cfgFile)
-    if err != nil {
-        return nil, err
-    }
-
-    return uf, nil
-}
-
-func (uf *TowerFactory) Get(name string) (tower.TowerType, error) {
-
-    u, ok := uf.items[name]
+func (ef *entityFactoryStruct) GetTower(name string) (tower.TowerType, error) {
+    t, ok := ef.Tower[name]
     if !ok {
         return tower.TowerType{}, NoSuchEntityErr
     }
-    return u, nil
+    return *t, nil
 }
+
+func (ef *entityFactoryStruct) ListTowers() ([]string) {
+    towers := make([]string, len(ef.Tower))
+
+    i := 0
+    for name, _ := range ef.Tower {
+        towers[i] = name
+        i++
+    }
+
+    return towers
+}
+
+func (ef *entityFactoryStruct) GetUnit(name string) (unit.UnitType, error) {
+    u, ok := ef.Unit[name]
+    if !ok {
+        return unit.UnitType{}, NoSuchEntityErr
+    }
+    return *u, nil
+}
+func (ef *entityFactoryStruct) ListUnits() ([]string) {
+    units := make([]string, len(ef.Unit))
+
+    i := 0
+    for name, _ := range ef.Unit {
+        units[i] = name
+        i++
+    }
+
+    return units
+}
+

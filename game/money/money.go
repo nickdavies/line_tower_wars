@@ -1,22 +1,29 @@
 package money
 
 import (
+    "errors"
     "sync"
 )
 
-type PlayerBalance interface {
+var NoMoney = errors.New("Not enough money")
+
+type PlayerBalanceRO interface {
     Get() uint
     GetIncome() uint
 
+    IncomeInterval() int64
+}
+
+type PlayerBalance interface {
+    PlayerBalanceRO
+
     Add(amount uint)
-    Spend(amount uint) bool
+    Spend(amount uint) error
 
     IncreaseIncome(amount uint)
     DecreaseIncome(amount uint)
 
     PayIncome()
-
-    IncomeInterval() int64
 }
 
 func NewPlayerBalance(balance, income, min_income uint, income_interval int64) PlayerBalance {
@@ -57,16 +64,16 @@ func (b *playerBalanceStruct) Add(amount uint) {
     b.balance += amount
 }
 
-func (b *playerBalanceStruct) Spend(amount uint) bool {
+func (b *playerBalanceStruct) Spend(amount uint) error {
     b.Lock()
     defer b.Unlock()
 
     if b.balance >= amount {
         b.balance -= amount
-        return true
+        return nil
     }
 
-    return false
+    return NoMoney
 }
 
 func (b *playerBalanceStruct) IncreaseIncome(amount uint) {

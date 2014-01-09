@@ -30,5 +30,7 @@ type GameConfig struct {
     MoneyConfig
     StageConfig
     TowerConfig
+
+    EntityDir string
 }
 

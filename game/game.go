@@ -6,21 +6,46 @@ import (
 )
 
 import (
+    "github.com/nickdavies/line_tower_wars/game/entity"
     "github.com/nickdavies/line_tower_wars/game/stage"
     "github.com/nickdavies/line_tower_wars/game/player"
     "github.com/nickdavies/line_tower_wars/game/money"
 )
 
 type PlayerControls interface {
+    BuyUnit(name string) error
+    BuyTower(name string, row, col uint16) error
+
     Tick() (int64, bool)
 
+    GetBalance() money.PlayerBalanceRO
+    GetEntityFactory() entity.EntityFactory
     GetGame() *Game
     GetPlayer() *player.Player
 }
 
 type playerController struct {
+    entityFactory entity.EntityFactory
     game *Game
     player *player.Player
+
+    noSpawn bool
+}
+
+func (p *playerController) BuyUnit(name string) error {
+    u, err := p.entityFactory.GetUnit(name)
+    if err != nil {
+        return err
+    }
+    return p.player.BuyUnit(&u, p.noSpawn)
+}
+
+func (p *playerController) BuyTower(name string, row, col uint16) error {
+    t, err := p.entityFactory.GetTower(name)
+    if err != nil {
+        return err
+    }
+    return p.player.BuildTower(&t, row, col, false)
 }
 
 func (p *playerController) Tick() (int64, bool) {
@@ -31,6 +56,14 @@ func (p *playerController) Tick() (int64, bool) {
     p.game.tickBarrier.Wait()
 
     return p.game.deltaTime, p.game.running
+}
+
+func (p *playerController) GetBalance() money.PlayerBalanceRO {
+    return p.player.Money
+}
+
+func (p *playerController) GetEntityFactory() entity.EntityFactory {
+    return p.entityFactory
 }
 
 func (p *playerController) GetGame() *Game {
@@ -56,7 +89,7 @@ type Game struct {
     stage *stage.Stage
 }
 
-func NewGame(cfg GameConfig, NumPlayers int) (*Game, []PlayerControls) {
+func NewGame(cfg GameConfig, NumPlayers int) (*Game, []PlayerControls, error) {
     if NumPlayers != 2 {
         panic("Only two players are supported atm")
     }
@@ -64,6 +97,11 @@ func NewGame(cfg GameConfig, NumPlayers int) (*Game, []PlayerControls) {
     g := &Game{
         NumPlayers: NumPlayers,
         running: true,
+    }
+
+    entities, err := entity.NewEntityFactory(cfg.EntityDir)
+    if err != nil {
+        return nil, nil, err
     }
 
     g.stage = stage.NewStage(NumPlayers)
@@ -80,6 +118,7 @@ func NewGame(cfg GameConfig, NumPlayers int) (*Game, []PlayerControls) {
         controls[i] = &playerController{
             game: g,
             player: g.players[i],
+            entityFactory: entities,
         }
 
         if prev_player != nil {
@@ -94,7 +133,7 @@ func NewGame(cfg GameConfig, NumPlayers int) (*Game, []PlayerControls) {
     g.resetBarrier.Add(NumPlayers + 1)
     g.tickBarrier.Add(NumPlayers + 1)
 
-    return g, controls
+    return g, controls, nil
 }
 
 func (g *Game) GetStage() *stage.Stage {

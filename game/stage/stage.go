@@ -5,7 +5,8 @@ import (
 )
 
 const PlayerStageWidth = 21
-const PlayerStageHeight = 59
+//const PlayerStageHeight = 59
+const PlayerStageHeight = 25
 
 const Wall_Side = 1
 const Wall_Top = 1

@@ -3,6 +3,7 @@ package player
 import (
     "math/rand"
     "time"
+    "fmt"
 )
 
 import (
@@ -130,26 +131,27 @@ func (p *Player) Update(deltaTime int64) {
         if p.Path.On(loc) {
             row_off, col_off := p.myStage.TopLeft()
             p.AStar.ClearTile(astar.Point{int(loc.Row - row_off), int(loc.Col - col_off)})
-            delete(p.Towers, loc)
+            //delete(p.Towers, loc)
         }
     }
 }
 
-func (p *Player) BuyUnit(t *unit.UnitType, no_spawn bool) bool {
-    ok := p.Money.Spend(t.Cost)
-    if ok {
-        if !no_spawn {
-            p.NextPlayer.SpawnUnit(t)
-        }
-        if t.IncomeDelta > 0 {
-            p.Money.IncreaseIncome(uint(t.IncomeDelta))
-        } else if t.IncomeDelta < 0 {
-            p.Money.DecreaseIncome(uint(-1 * t.IncomeDelta))
-        }
-
-        return true
+func (p *Player) BuyUnit(t *unit.UnitType, no_spawn bool) error {
+    err := p.Money.Spend(t.Cost)
+    if err != nil {
+        return err
     }
-    return false
+
+    if !no_spawn {
+        p.NextPlayer.SpawnUnit(t)
+    }
+    if t.IncomeDelta > 0 {
+        p.Money.IncreaseIncome(uint(t.IncomeDelta))
+    } else if t.IncomeDelta < 0 {
+        p.Money.DecreaseIncome(uint(-1 * t.IncomeDelta))
+    }
+
+    return nil
 }
 
 func (p *Player) SpawnUnit(t *unit.UnitType) {
@@ -173,28 +175,32 @@ func (p *Player) Buildable(row, col uint16) (bool) {
     return p.myStage.Buildable(row, col)
 }
 
-func (p *Player) BuildTower(t *tower.TowerType, row, col uint16, no_repath bool) (user_message string) {
-    if !p.Buildable(row, col) {
-        return "not buildable"
+func (p *Player) BuildTower(t *tower.TowerType, row, col uint16, no_repath bool) error {
+    row_off, col_off := p.myStage.TopLeft()
+
+    abs_row := row + row_off
+    abs_col := col + col_off
+
+    if !p.Buildable(abs_row, abs_col) {
+        return fmt.Errorf("(%d, %d) is not buildable \n", row, col)
     }
 
-    ok := p.Money.Spend(t.Cost)
-    if !ok {
-        return "no money"
+    err := p.Money.Spend(t.Cost)
+    if err != nil {
+        return err
     }
 
-    p.Towers[pathing.Loc{row, col}] = &tower.Tower{
+    p.Towers[pathing.Loc{abs_row, abs_col}] = &tower.Tower{
         Type: t,
     }
 
-    row_off, col_off := p.myStage.TopLeft()
-    p.AStar.FillTile(astar.Point{int(row - row_off), int(col - col_off)}, towerWeight)
+    p.AStar.FillTile(astar.Point{int(row), int(col)}, towerWeight)
 
     if !no_repath {
         p.Repath()
     }
 
-    return ""
+    return nil
 }
 
 func (p *Player) Repath() {
