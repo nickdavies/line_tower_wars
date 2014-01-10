@@ -1,7 +1,7 @@
 package entity
 
 import (
-    "errors"
+    "fmt"
 )
 
 import (
@@ -13,7 +13,13 @@ import (
     "github.com/nickdavies/line_tower_wars/game/tower"
 )
 
-var NoSuchEntityErr = errors.New("No such entity exists")
+type NoSuchEntityErr struct {
+    entity string
+}
+
+func (e NoSuchEntityErr) Error() string {
+    return fmt.Sprintf("No entity named %s exists", e.entity)
+}
 
 type EntityFactory interface {
     GetTower(name string) (tower.TowerType, error)
@@ -38,13 +44,25 @@ func NewEntityFactory (cfgFile string) (EntityFactory, error) {
         return nil, err
     }
 
+    for name, u := range ef.Unit {
+        if name != u.Name {
+            return nil, fmt.Errorf("Unit is listed as '%s' but name = '%s'", name, u.Name)
+        }
+    }
+
+    for name, t := range ef.Tower {
+        if name != t.Name {
+            return nil, fmt.Errorf("Tower is listed as '%s' but name = '%s'", name, t.Name)
+        }
+    }
+
     return ef, nil
 }
 
 func (ef *entityFactoryStruct) GetTower(name string) (tower.TowerType, error) {
     t, ok := ef.Tower[name]
     if !ok {
-        return tower.TowerType{}, NoSuchEntityErr
+        return tower.TowerType{}, NoSuchEntityErr{name}
     }
     return *t, nil
 }
@@ -64,7 +82,7 @@ func (ef *entityFactoryStruct) ListTowers() ([]string) {
 func (ef *entityFactoryStruct) GetUnit(name string) (unit.UnitType, error) {
     u, ok := ef.Unit[name]
     if !ok {
-        return unit.UnitType{}, NoSuchEntityErr
+        return unit.UnitType{}, NoSuchEntityErr{name}
     }
     return *u, nil
 }
