@@ -88,7 +88,7 @@ func RunAttackDefenceRatioAI(control game.PlayerControls, attackPercent float32,
         return err
     }
 
-    unit, err := entities.GetUnit("basic_unit")
+    unit, err := entities.GetUnit("unit_1")
     if err != nil {
         return err
     }
@@ -134,7 +134,7 @@ func RunAttackDefenceRatioAI(control game.PlayerControls, attackPercent float32,
                     break
                 }
 
-                err := control.BuyUnit("basic_unit")
+                err := control.BuyUnit("unit_1")
                 if err != nil {
                     panic(err)
                 }

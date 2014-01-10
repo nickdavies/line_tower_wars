@@ -1,4 +1,4 @@
-package game
+package config
 
 type MoneyConfig struct {
     Balance uint

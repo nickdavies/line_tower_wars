@@ -4,12 +4,6 @@ import (
     "github.com/neagix/Go-SDL/sdl"
 )
 
-import (
-    "github.com/nickdavies/line_tower_wars/game"
-
-    "github.com/nickdavies/line_tower_wars/graphics/texture"
-)
-
 type entityLayer struct {
     layerBase
 
@@ -21,29 +15,20 @@ type entityLayer struct {
 
     // no events
     voidEvents
-
-    square_size uint16
-
-    texture_map texture.TextureMap
 }
 
-func NewEntityLayer(texture_map texture.TextureMap, square_size uint16, child Layer, g *game.Game) Layer {
-    eg := &entityLayer{
-        layerBase: layerBase{child: child, game: g},
+func init() {
+    registerLayer("entity", func(base layerBase, cfg interface{}) Layer {
+        l := &entityLayer{
+            layerBase: base,
+        }
 
-        texture_map: texture_map,
-        square_size: square_size,
-    }
+        l.voidOffsets = voidOffsets{&l.layerBase}
+        l.voidSetup = voidSetup{&l.layerBase}
+        l.voidEvents = voidEvents{&l.layerBase}
 
-    eg.voidOffsets = voidOffsets{&eg.layerBase}
-    eg.voidSetup = voidSetup{&eg.layerBase}
-    eg.voidEvents = voidEvents{&eg.layerBase}
-
-    if child != nil {
-        child.setParent(eg)
-    }
-
-    return eg
+        return l
+    })
 }
 
 func (g *entityLayer) Update(deltaTime int64) {
@@ -54,8 +39,9 @@ func (g *entityLayer) Update(deltaTime int64) {
 
 func (g *entityLayer) Render(target *sdl.Surface) {
 
+    var units = make(map[string]*sdl.Surface)
+
     turret_texture := g.texture_map.GetName("turret_basic").Surface
-    unit_texture := g.texture_map.GetName("unit_basic").Surface
 
     for i := 0; i < g.game.NumPlayers; i++ {
         player := g.game.GetPlayer(i)
@@ -72,13 +58,19 @@ func (g *entityLayer) Render(target *sdl.Surface) {
         }
 
         for _, u := range player.Units {
+            unit_name := u.Type.Name
+            _, ok := units[unit_name]
+            if !ok {
+                units[unit_name] = g.texture_map.GetName(unit_name).Surface
+            }
+
             loc := u.Loc
             target.Blit(
                 &sdl.Rect{
                     X: int16(loc.Col * float64(g.square_size)) - 32,
                     Y: int16(loc.Row * float64(g.square_size)) - 32,
                 },
-                unit_texture,
+                units[unit_name],
                 nil,
             )
 

@@ -9,7 +9,6 @@ import (
 )
 
 import (
-    "github.com/nickdavies/line_tower_wars/game/stage"
     "github.com/nickdavies/line_tower_wars/game/terrain"
 
     "github.com/nickdavies/line_tower_wars/graphics/texture"
@@ -28,44 +27,34 @@ type stageLayer struct {
     size_x uint16
     size_y uint16
 
-    s *stage.Stage
-    square_size uint16
-
-    texture_map texture.TextureMap
     terrain_textures map[terrain.Terrain]*texture.Texture
 
     surface *sdl.Surface
 }
 
-func NewStageLayer(s *stage.Stage, texture_map texture.TextureMap, square_size uint16, child Layer) Layer {
+func init() {
+    registerLayer("stage", func(base layerBase, cfg interface{}) Layer {
+        stage := base.game.GetStage()
+        l := &stageLayer{
+            layerBase: base,
 
-    sg := &stageLayer{
-        layerBase: layerBase{child: child},
+            size_x: base.square_size * uint16(len(stage.Tiles)),
+            size_y: base.square_size * uint16(len(stage.Tiles[0])),
 
-        size_x: square_size * uint16(len(s.Tiles)),
-        size_y: square_size * uint16(len(s.Tiles[0])),
+            terrain_textures: map[terrain.Terrain]*texture.Texture{
+                terrain.T_Grass: base.texture_map.GetName("grass_center"),
+                terrain.T_Wall:  base.texture_map.GetName("wall_center"),
+                terrain.T_Shadow:  base.texture_map.GetName("shadow_center"),
+                terrain.T_Spawn: base.texture_map.GetName("spawn_center"),
+                terrain.T_Goal:  base.texture_map.GetName("goal_center"),
+            },
+        }
 
-        s: s,
-        square_size: square_size,
+        l.voidEvents = voidEvents{&l.layerBase}
+        l.voidOffsets = voidOffsets{&l.layerBase}
 
-        texture_map: texture_map,
-        terrain_textures: map[terrain.Terrain]*texture.Texture{
-            terrain.T_Grass: texture_map.GetName("grass_center"),
-            terrain.T_Wall:  texture_map.GetName("wall_center"),
-            terrain.T_Shadow:  texture_map.GetName("shadow_center"),
-            terrain.T_Spawn: texture_map.GetName("spawn_center"),
-            terrain.T_Goal:  texture_map.GetName("goal_center"),
-        },
-    }
-
-    sg.voidEvents = voidEvents{&sg.layerBase}
-    sg.voidOffsets = voidOffsets{&sg.layerBase}
-
-    if child != nil {
-        child.setParent(sg)
-    }
-
-    return sg
+        return l
+    })
 }
 
 func (g *stageLayer) Setup() (err error) {
@@ -81,9 +70,10 @@ func (g *stageLayer) Setup() (err error) {
     var y_tiles uint16
     var x_tiles uint16
 
-    for row = 0; row < uint16(len(g.s.Tiles[0])); row++ {
-        for col = 0; col < uint16(len(g.s.Tiles)); col++ {
-            texture := g.terrain_textures[g.s.Tiles[col][row]]
+    stage := g.game.GetStage()
+    for row = 0; row < uint16(len(stage.Tiles[0])); row++ {
+        for col = 0; col < uint16(len(stage.Tiles)); col++ {
+            texture := g.terrain_textures[stage.Tiles[col][row]]
 
             x_tiles = g.square_size / texture.Width
             y_tiles = g.square_size / texture.Height

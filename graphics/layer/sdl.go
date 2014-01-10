@@ -4,6 +4,12 @@ import (
     "github.com/neagix/Go-SDL/sdl"
 )
 
+type SdlLayerCfg struct {
+    Display *sdl.Surface
+    ScreenX uint16
+    ScreenY uint16
+}
+
 type sdlLayer struct {
     // Get parent/child fields
     layerBase
@@ -17,8 +23,6 @@ type sdlLayer struct {
     // no events
     voidEvents
 
-    running bool
-
     // Display size
     x uint16
     y uint16
@@ -27,26 +31,25 @@ type sdlLayer struct {
     display *sdl.Surface
 }
 
+func init() {
+    registerLayer("sdl", func(base layerBase, cfg interface{}) Layer {
+        sdl_cfg := cfg.(SdlLayerCfg)
 
-func NewSdlLayer(display *sdl.Surface, x, y uint16, child Layer) Layer {
-    g := &sdlLayer{
-        layerBase: layerBase{child: child},
+        l := &sdlLayer{
+            layerBase: base,
 
-        x: x,
-        y: y,
+            x: sdl_cfg.ScreenX,
+            y: sdl_cfg.ScreenY,
 
-        display: display,
-    }
+            display: sdl_cfg.Display,
+        }
 
-    g.voidOffsets = voidOffsets{&g.layerBase}
-    g.voidSetup = voidSetup{&g.layerBase}
-    g.voidEvents = voidEvents{&g.layerBase}
+        l.voidOffsets = voidOffsets{&l.layerBase}
+        l.voidSetup = voidSetup{&l.layerBase}
+        l.voidEvents = voidEvents{&l.layerBase}
 
-    if child != nil {
-        child.setParent(g)
-    }
-
-    return g
+        return l
+    })
 }
 
 func (g *sdlLayer) HandleEvent(event interface{}) {

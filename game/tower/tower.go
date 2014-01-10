@@ -1,6 +1,7 @@
 package tower
 
 import (
+    "fmt"
     "time"
 )
 
@@ -14,7 +15,7 @@ type TowerType struct {
     Name string
 
     Range float64
-    FireRate int
+    FireRate float64
     Damage int
 
     Health uint
@@ -42,6 +43,7 @@ func (t *Tower) Update(deltaTime int64, units map[int]*unit.Unit) {
     if t.attackTimer / int64(time.Second) > int64(t.Type.FireRate) {
         var best_u *unit.Unit
         locf := t.Loc.ToFloat(0.5)
+        fmt.Println(locf)
 
         for _, u := range units {
             if u.Health > 0 {

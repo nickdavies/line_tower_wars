@@ -10,6 +10,7 @@ import (
 )
 
 import (
+    gfxconfig "github.com/nickdavies/line_tower_wars/graphics/config"
     "github.com/nickdavies/line_tower_wars/graphics/util"
 )
 
@@ -32,29 +33,30 @@ type panLayer struct {
     surface *sdl.Surface
 }
 
-func NewPanLayer(pan_region_x, pan_region_y, starting_x, starting_y, pan_speed uint16, child Layer) Layer {
+func init() {
+    registerLayer("pan", func(base layerBase, cfg interface{}) Layer {
+        pan_cfg := cfg.(gfxconfig.PanningOptions)
 
-    if child == nil {
-        panic(fmt.Errorf("You must give a child to pan Layer"))
-    }
+        if base.child == nil {
+            panic(fmt.Errorf("You must give a child to pan Layer"))
+        }
 
-    pg := &panLayer{
-        layerBase: layerBase{child: child},
+        l := &panLayer{
+            layerBase: base,
 
-        pan_region_x: pan_region_x,
-        pan_region_y: pan_region_y,
+            pan_region_x: pan_cfg.PanXSize,
+            pan_region_y: pan_cfg.PanYSize,
 
-        pan_speed: pan_speed,
+            view_x: pan_cfg.StartingX,
+            view_y: pan_cfg.StartingY,
 
-        view_x: starting_x,
-        view_y: starting_y,
-    }
+            pan_speed: pan_cfg.PanSpeed,
+        }
 
-    pg.voidEvents = voidEvents{&pg.layerBase}
+        l.voidEvents = voidEvents{&l.layerBase}
 
-    child.setParent(pg)
-
-    return pg
+        return l
+    })
 }
 
 func (g *panLayer) Setup() (err error) {

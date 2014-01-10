@@ -5,4 +5,5 @@
 4, 64, 64, goal_center,    terrain/goal_center.png
 
 5, 128, 128, turret_basic, turret/tank.png
-6, 64, 64, unit_basic, characters/unit_1.png
+
+6, 64, 64, unit_1, characters/unit_1.png

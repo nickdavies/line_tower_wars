@@ -1,4 +1,4 @@
-package graphics
+package config
 
 type PanningOptions struct {
     PanXSize uint16
@@ -19,4 +19,6 @@ type GraphicsConfig struct {
     SquareSize uint16
 
     TextureDir string
+    FontFile string
+    FontSize int
 }

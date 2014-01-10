@@ -9,7 +9,10 @@ import (
 import (
     "github.com/nickdavies/line_tower_wars/ai"
     "github.com/nickdavies/line_tower_wars/game"
+    gameconfig "github.com/nickdavies/line_tower_wars/game/config"
+
     "github.com/nickdavies/line_tower_wars/graphics"
+    gfxconfig "github.com/nickdavies/line_tower_wars/graphics/config"
 )
 
 func main() {
@@ -20,9 +23,9 @@ func main() {
 
     var players int = 2
 
-    game_cfg := game.GameConfig{
-        MoneyConfig: game.MoneyConfig{
-            Balance: 120,
+    game_cfg := gameconfig.GameConfig{
+        MoneyConfig: gameconfig.MoneyConfig{
+            Balance: 60,
             Income: 5,
             MinIncome: 1,
             IncomeInterval: 2,
@@ -30,15 +33,17 @@ func main() {
         EntityDir: "./gfx/entity.cfg",
     }
 
-    gfx_config := graphics.GraphicsConfig{
+    gfx_config := gfxconfig.GraphicsConfig{
         ScreenX: 1920,
         ScreenY: 1080,
 
         SquareSize: 128,
 
         TextureDir: "./gfx/textures",
+        FontFile: "./gfx/DejaVuSansMono.ttf",
+        FontSize: 12,
 
-        PanningOptions: graphics.PanningOptions{
+        PanningOptions: gfxconfig.PanningOptions{
             PanXSize: 90,
             PanYSize: 90,
 
@@ -83,7 +88,7 @@ func main() {
     }()
 
     if use_graphics {
-        gfx, err := graphics.NewGraphics(gfx_config, g, 0)
+        gfx, err := graphics.NewGraphics(gfx_config, g, nil)
         if err != nil {
             panic(err)
         }

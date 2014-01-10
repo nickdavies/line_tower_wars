@@ -9,9 +9,10 @@ import (
     "github.com/neagix/Go-SDL/ttf"
 )
 
-import (
-    "github.com/nickdavies/line_tower_wars/game"
-)
+type GuiLayerCfg struct {
+    FontFile string
+    FontSize int
+}
 
 type guiLayer struct {
     layerBase
@@ -22,22 +23,26 @@ type guiLayer struct {
     // no events
     voidEvents
 
+    fontFile string
+    fontSize int
     font *ttf.Font
 }
 
-func NewGuiLayer(game *game.Game, child Layer) Layer {
-    gl := &guiLayer{
-        layerBase: layerBase{child: child, game: game},
-    }
+func init() {
+    registerLayer("gui", func(base layerBase, cfg interface{}) Layer {
+        gui_cfg := cfg.(GuiLayerCfg)
 
-    gl.voidOffsets = voidOffsets{&gl.layerBase}
-    gl.voidEvents = voidEvents{&gl.layerBase}
+        l := &guiLayer{
+            layerBase: base,
+            fontFile: gui_cfg.FontFile,
+            fontSize: gui_cfg.FontSize,
+        }
 
-    if child != nil {
-        child.setParent(gl)
-    }
+        l.voidOffsets = voidOffsets{&l.layerBase}
+        l.voidEvents = voidEvents{&l.layerBase}
 
-    return gl
+        return l
+    })
 }
 
 func (g *guiLayer) Setup() (err error) {
@@ -47,7 +52,7 @@ func (g *guiLayer) Setup() (err error) {
     }
 
     // TODO: fix this
-    g.font = ttf.OpenFont("./gfx/DejaVuSansMono.ttf", 12)
+    g.font = ttf.OpenFont(g.fontFile, g.fontSize)
     if g.font == nil {
         return fmt.Errorf("OpenFont failed: %s", sdl.GetError())
     }

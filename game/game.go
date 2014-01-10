@@ -6,6 +6,7 @@ import (
 )
 
 import (
+    gameconfig "github.com/nickdavies/line_tower_wars/game/config"
     "github.com/nickdavies/line_tower_wars/game/entity"
     "github.com/nickdavies/line_tower_wars/game/stage"
     "github.com/nickdavies/line_tower_wars/game/player"
@@ -89,7 +90,7 @@ type Game struct {
     stage *stage.Stage
 }
 
-func NewGame(cfg GameConfig, NumPlayers int) (*Game, []PlayerControls, error) {
+func NewGame(cfg gameconfig.GameConfig, NumPlayers int) (*Game, []PlayerControls, error) {
     if NumPlayers != 2 {
         panic("Only two players are supported atm")
     }

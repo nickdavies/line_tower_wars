@@ -12,12 +12,13 @@ import (
 import (
     "github.com/nickdavies/line_tower_wars/game"
 
+    "github.com/nickdavies/line_tower_wars/graphics/config"
     "github.com/nickdavies/line_tower_wars/graphics/layer"
     "github.com/nickdavies/line_tower_wars/graphics/texture"
 )
 
 type Graphics struct {
-    cfg GraphicsConfig
+    cfg config.GraphicsConfig
 
     g *game.Game
 
@@ -27,7 +28,7 @@ type Graphics struct {
     topLayer layer.Layer
 }
 
-func NewGraphics(cfg GraphicsConfig, g *game.Game, perspective int) (*Graphics, error) {
+func NewGraphics(cfg config.GraphicsConfig, g *game.Game, controls game.PlayerControls) (*Graphics, error) {
 
     gfx := &Graphics{
         cfg: cfg,
@@ -41,61 +42,38 @@ func NewGraphics(cfg GraphicsConfig, g *game.Game, perspective int) (*Graphics, 
         return nil, err
     }
 
-    tm, err := texture.NewTextureMap(cfg.SquareSize, cfg.TextureDir)
+    texture_map, err := texture.NewTextureMap(cfg.SquareSize, cfg.TextureDir)
     if err != nil {
         return nil, err
     }
 
-    gfx.layers["entity"] = layer.NewEntityLayer(
-        tm,
-        cfg.SquareSize,
-        nil,
-        g,
-    )
-    next_layer := gfx.layers["entity"]
+    layers := []string{"entity", "build", "stage", "pan", "gui", "sdl"}
 
-    if perspective != -1 {
-        gfx.layers["build"] = layer.NewBuildLayer(
-            g.GetPlayer(perspective),
-            tm,
-            cfg.SquareSize,
-            gfx.layers["entity"],
-        )
-        next_layer = gfx.layers["build"]
+    layer_cfg := map[string]interface{}{
+        "entity": nil,
+        "build": nil,
+        "stage": nil,
+        "pan": cfg.PanningOptions,
+        "gui": layer.GuiLayerCfg{cfg.FontFile, cfg.FontSize},
+        "sdl": layer.SdlLayerCfg{gfx.display, cfg.ScreenX, cfg.ScreenY},
     }
 
-    gfx.layers["stage"] = layer.NewStageLayer(
-        g.GetStage(),
-        tm,
-        cfg.SquareSize,
-        next_layer,
-    )
+    layer_disabled := make(map[string]bool)
 
-    gfx.layers["pan"] = layer.NewPanLayer(
-        cfg.PanningOptions.PanXSize,
-        cfg.PanningOptions.PanYSize,
+    if controls == nil {
+        layer_disabled["build"] = true
+    }
 
-        cfg.PanningOptions.StartingX,
-        cfg.PanningOptions.StartingY,
 
-        cfg.PanningOptions.PanSpeed,
+    builder := layer.NewLayerBuilder(g, controls, texture_map, cfg.SquareSize)
 
-        gfx.layers["stage"],
-    )
-
-    gfx.layers["gui"] = layer.NewGuiLayer(
-        g,
-        gfx.layers["pan"],
-    )
-
-    gfx.layers["main"] = layer.NewSdlLayer(
-        gfx.display,
-        cfg.ScreenX,
-        cfg.ScreenY,
-        gfx.layers["gui"],
-    )
-
-    gfx.topLayer = gfx.layers["main"]
+    var prev layer.Layer
+    for _, name := range layers {
+        if !layer_disabled[name] {
+            prev = builder.Build(name, layer_cfg[name], prev)
+        }
+    }
+    gfx.topLayer = prev
 
     return gfx, nil
 }
