@@ -116,7 +116,7 @@ func RunAttackDefenceRatioAI(control game.PlayerControls, attackPercent float32,
         }
 
         for {
-            if float32(unit_spend) / float32(total_spend) > attackPercent && !at_end {
+            if tb.row == stage.Spawn_Size || float32(unit_spend) / float32(total_spend) > attackPercent && !at_end {
                 if tower.Cost > money.Get() {
                     break
                 }
