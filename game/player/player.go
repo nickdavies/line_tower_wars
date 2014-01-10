@@ -190,9 +190,7 @@ func (p *Player) BuildTower(t *tower.TowerType, row, col uint16, no_repath bool)
         return err
     }
 
-    p.Towers[pathing.Loc{abs_row, abs_col}] = &tower.Tower{
-        Type: t,
-    }
+    p.Towers[pathing.Loc{abs_row, abs_col}] = tower.NewTower(t, pathing.Loc{abs_row, abs_col})
 
     p.AStar.FillTile(astar.Point{int(row), int(col)}, towerWeight)
 
